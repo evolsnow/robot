@@ -18,8 +18,7 @@ type robot struct {
 	updates tgbotapi.Update
 	shutUp  bool
 	//	language []string
-	name    string
-
+	name string
 }
 
 func (rb *robot) run() {
@@ -45,7 +44,6 @@ func newRobot(token string) *robot {
 	rb.updates, _ = rb.bot.ListenForWebhook("/" + rb.bot.Token)
 	return rb
 }
-
 
 //func main() {
 //	//test()
@@ -237,7 +235,7 @@ func tlAI(info string) string {
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	return strings.Replace(reply.Text + reply.Url, "<br>", "\n", -1)
+	return strings.Replace(reply.Text+reply.Url, "<br>", "\n", -1)
 }
 
 type tlReply struct {
