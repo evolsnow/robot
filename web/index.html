@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Samaritan</title>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="screenfull.min.js"></script>
+    <script type="text/javascript" src="samaritan.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div id="main">
+    <p id="msg">&nbsp;</p>
+    <hr/>
+</div>
+<div id="marker">
+    <span id="triangle">&#9650</span>
+
+    <form action="/new-msg/socket" method="post">
+        <!--<textarea id="userText" ></textarea>-->
+        <p><input id="userText" type="text" style="font-size:18px;width:220px;height:25px"/></p>
+        <p><input id="userButton" value="Ask samaritan" style="width:100px;height:20px" type="submit"/></form>
+    </p>
+    </form>
+
+
+</div>
+</body>
+<!--<script type="text/javascript" src="chat.js"></script>-->
+</html>
