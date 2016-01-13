@@ -15,7 +15,7 @@ import (
 
 type robot struct {
 	bot     *tgbotapi.BotAPI
-	updates tgbotapi.Update
+	updates <-chan tgbotapi.Update
 	shutUp  bool
 	//	language []string
 	name string
@@ -158,20 +158,19 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	rawMsg := ""
-	funcMap := map[string]func(update tgbotapi.Update) string{
-		"/start": start,
-		"/talk":  talk,
-	}
 	if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint := received[0]
-		if _, ok := funcMap[endPoint]; ok {
-			rawMsg = funcMap[endPoint](update)
-		} else {
-			rawMsg = "unknown command"
+		switch endPoint {
+		case "/start":
+			rawMsg = rb.Start(update)
+		case "/talk":
+			rawMsg = rb.Talk(update)
+		default:
+			rawMsg = "unknow command, type /help?"
 		}
 	} else {
-		rawMsg = talk(rb, update)
+		rawMsg = rb.Talk(update)
 	}
 	if rawMsg == "" {
 		return
@@ -185,11 +184,11 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 
 }
 
-func start(update tgbotapi.Update) string {
+func (rb *robot) Start(update tgbotapi.Update) string {
 	return "welcome: " + update.Message.Chat.UserName
 }
 
-func talk(rb *robot, update tgbotapi.Update) string {
+func (rb *robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	chinese := false
 	if strings.Contains(info, "@EvolsnowBot") {
