@@ -13,128 +13,144 @@ import (
 	"unicode"
 )
 
-var bot *tgbotapi.BotAPI
-var shutUpJa bool
-var shutUpSa bool
+type robot struct {
+	bot     *tgbotapi.BotAPI
+	updates tgbotapi.Update
+	shutUp  bool
+	//	language []string
+	name    string
 
-//func socketHandler(ws *websocket.Conn) {
-//	for {
-//		var in string
-//		if err := websocket.Message.Receive(ws, &in); err != nil {
-//			log.Println(err)
-//			return
-//		}
-//		fmt.Printf("Received: %s\n", in)
-//		if err := websocket.Message.Send(ws, tlAI(in)); err != nil {
-//			log.Println(err)
-//		}
+}
+
+func (rb *robot) run() {
+	for update := range rb.updates {
+		go handlerUpdate(rb, update)
+	}
+}
+
+func newRobot(token string) *robot {
+	var rb = new(robot)
+	var err error
+	rb.bot, err = tgbotapi.NewBotAPI(token)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rb.bot.Debug = false
+	rb.name = rb.bot.Self.UserName
+	log.Printf("Authorized on account %s", rb.name)
+	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + rb.bot.Token))
+	if err != nil {
+		log.Fatal(err)
+	}
+	rb.updates, _ = rb.bot.ListenForWebhook("/" + rb.bot.Token)
+	return rb
+}
+
+
+//func main() {
+//	//test()
+//	//used for 104
+//	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
+//
+//	//	go func() {
+//	//		http.Handle("/websocket", websocket.Handler(socketHandler))
+//	//		log.Fatal(http.ListenAndServe("localhost:8000", nil))
+//	//	}()
+//	go http.ListenAndServe("0.0.0.0:8000", nil)
+//	go jarvis()
+//	var err error
+//	bot, err = tgbotapi.NewBotAPI("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	bot.Debug = false
+//	log.Printf("Authorized on account %s", bot.Self.UserName)
+//
+//	//used for 104
+//	//_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://104.236.156.226:8443/"+bot.Token, "server.crt"))
+//	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + bot.Token))
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	updates, _ := bot.ListenForWebhook("/" + bot.Token)
+//	for update := range updates {
+//		go handlerUpdate(update)
 //	}
 //}
 
-func main() {
-	//test()
-	//used for 104
-	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
+//func jarvis() {
+//	jabot, err := tgbotapi.NewBotAPI("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	log.Printf("Authorized on account %s", jabot.Self.UserName)
+//	_, err = jabot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + jabot.Token))
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	updates, _ := jabot.ListenForWebhook("/" + jabot.Token)
+//	jabot.Debug = false
+//	for update := range updates {
+//		go func(update tgbotapi.Update) {
+//			//			zh := false
+//			info := update.Message.Text
+//			rawMsg := ""
+//			defer func() {
+//				if p := recover(); p != nil {
+//					err := fmt.Errorf("internal error: %v", p)
+//					log.Println(err)
+//				}
+//			}()
+//
+//			if strings.Contains(info, "@SnowJarvisBot") {
+//				if strings.Contains(info, "闭嘴") || strings.Contains(info, "别说话") {
+//					shutUpJa = true
+//				} else if strings.Contains(info, "说话") {
+//					shutUpJa = false
+//					rawMsg = "jarvis终于可以说话啦~"
+//				}
+//				info = strings.Replace(info, "@EvolsnowBot", "", -1)
+//			}
+//			if shutUpJa {
+//				return
+//			}
+//			log.Println(info)
+//			// SimBot
+//			//			for _, r := range info {
+//			//				if unicode.Is(unicode.Scripts["Han"], r) {
+//			//					info = strings.Replace(info, " ", "", -1)
+//			//					zh = true
+//			//					break
+//			//				}
+//			//			}
+//
+//			//			if rawMsg != "" {
+//			//			} else if zh {
+//			//				rawMsg = simAI(info, "ch")
+//			//			} else {
+//			//				rawMsg = simAI(info, "en")
+//			//			}
+//			//			if strings.Contains(rawMsg, "I HAVE NO RESPONSE.") {
+//			//				rawMsg = "ah...I don't know"
+//			//			}
+//			if rawMsg != "" {
+//			} else {
+//				rawMsg = qinAI(info)
+//			}
+//			msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
+//			msg.ParseMode = "markdown"
+//			_, err := jabot.Send(msg)
+//			if err != nil {
+//				panic(err)
+//			}
+//
+//		}(update)
+//	}
+//}
 
-	//	go func() {
-	//		http.Handle("/websocket", websocket.Handler(socketHandler))
-	//		log.Fatal(http.ListenAndServe("localhost:8000", nil))
-	//	}()
-	go http.ListenAndServe("0.0.0.0:8000", nil)
-	go jarvis()
-	var err error
-	bot, err = tgbotapi.NewBotAPI("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.Debug = false
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	//used for 104
-	//_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://104.236.156.226:8443/"+bot.Token, "server.crt"))
-	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + bot.Token))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	updates, _ := bot.ListenForWebhook("/" + bot.Token)
-	for update := range updates {
-		go handlerUpdate(update)
-	}
-}
-
-func jarvis() {
-	jabot, err := tgbotapi.NewBotAPI("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Authorized on account %s", jabot.Self.UserName)
-	_, err = jabot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + jabot.Token))
-	if err != nil {
-		log.Fatal(err)
-	}
-	updates, _ := jabot.ListenForWebhook("/" + jabot.Token)
-	jabot.Debug = false
-	for update := range updates {
-		go func(update tgbotapi.Update) {
-			//			zh := false
-			info := update.Message.Text
-			rawMsg := ""
-			defer func() {
-				if p := recover(); p != nil {
-					err := fmt.Errorf("internal error: %v", p)
-					log.Println(err)
-				}
-			}()
-
-			if strings.Contains(info, "@SnowJarvisBot") {
-				if strings.Contains(info, "闭嘴") || strings.Contains(info, "别说话") {
-					shutUpJa = true
-				} else if strings.Contains(info, "说话") {
-					shutUpJa = false
-					rawMsg = "jarvis终于可以说话啦~"
-				}
-				info = strings.Replace(info, "@EvolsnowBot", "", -1)
-			}
-			if shutUpJa {
-				return
-			}
-			log.Println(info)
-			// SimBot
-			//			for _, r := range info {
-			//				if unicode.Is(unicode.Scripts["Han"], r) {
-			//					info = strings.Replace(info, " ", "", -1)
-			//					zh = true
-			//					break
-			//				}
-			//			}
-
-			//			if rawMsg != "" {
-			//			} else if zh {
-			//				rawMsg = simAI(info, "ch")
-			//			} else {
-			//				rawMsg = simAI(info, "en")
-			//			}
-			//			if strings.Contains(rawMsg, "I HAVE NO RESPONSE.") {
-			//				rawMsg = "ah...I don't know"
-			//			}
-			if rawMsg != "" {
-			} else {
-				rawMsg = qinAI(info)
-			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
-			msg.ParseMode = "markdown"
-			_, err := jabot.Send(msg)
-			if err != nil {
-				panic(err)
-			}
-
-		}(update)
-	}
-}
-
-func handlerUpdate(update tgbotapi.Update) {
+func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			err := fmt.Errorf("internal error: %v", p)
@@ -157,14 +173,14 @@ func handlerUpdate(update tgbotapi.Update) {
 			rawMsg = "unknown command"
 		}
 	} else {
-		rawMsg = talk(update)
+		rawMsg = talk(rb, update)
 	}
 	if rawMsg == "" {
 		return
 	}
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
-	_, err := bot.Send(msg)
+	_, err := rb.bot.Send(msg)
 	if err != nil {
 		panic(err)
 	}
@@ -175,14 +191,14 @@ func start(update tgbotapi.Update) string {
 	return "welcome: " + update.Message.Chat.UserName
 }
 
-func talk(update tgbotapi.Update) string {
+func talk(rb *robot, update tgbotapi.Update) string {
 	info := update.Message.Text
-	zh := false
+	chinese := false
 	if strings.Contains(info, "@EvolsnowBot") {
 		if strings.Contains(info, "闭嘴") || strings.Contains(info, "别说话") {
-			shutUpSa = true
+			rb.shutUp = true
 		} else if strings.Contains(info, "说话") {
-			shutUpSa = false
+			rb.shutUp = false
 			return "samaritan终于可以说话啦~"
 		}
 		info = strings.Replace(info, "@EvolsnowBot", "", -1)
@@ -190,7 +206,7 @@ func talk(update tgbotapi.Update) string {
 	//	if text := strings.Split(info, " "); text[0] == "@EvolsnowBot" {
 	//		info = strings.Join(text[1:], " ")
 	//	}
-	if shutUpSa {
+	if rb.shutUp {
 		return ""
 	}
 	log.Println(info)
@@ -198,15 +214,13 @@ func talk(update tgbotapi.Update) string {
 	for _, r := range info {
 		if unicode.Is(unicode.Scripts["Han"], r) {
 			info = strings.Replace(info, " ", "", -1)
-			zh = true
+			chinese = true
 			break
 		}
 	}
-	if zh {
-		log.Println("汉语")
+	if chinese {
 		response = tlAI(info)
 	} else {
-		log.Println("英语")
 		response = mitAI(info)
 	}
 	return response
@@ -223,7 +237,7 @@ func tlAI(info string) string {
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	return strings.Replace(reply.Text+reply.Url, "<br>", "\n", -1)
+	return strings.Replace(reply.Text + reply.Url, "<br>", "\n", -1)
 }
 
 type tlReply struct {
@@ -294,15 +308,4 @@ func mitAI(info string) string {
 	ret = strings.Replace(ret[13:], "<br>", "\n", -1)
 	ret = strings.Replace(ret, "Mitsuku", "samaritan", -1)
 	return ret
-}
-
-func test() {
-
-	//	re, _ := regexp.Compile("Mitsuku:</B>(.*)")
-	//	all := re.FindAll([]byte(str), -1)
-	//	re2, _ := regexp.Compile("Has(.*?)ff")
-	//	ret := re2.ReplaceAllString(string(all[0])[15:], "")
-	//
-	//	fmt.Println(ret)
-	//	os.Exit(1)
 }
