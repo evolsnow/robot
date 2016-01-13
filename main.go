@@ -11,11 +11,12 @@ import (
 )
 
 func main() {
-	//test()
 	//used for 104
 	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
 	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan")
+	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
 	go samaritan.run()
+	go jarvis.run()
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
