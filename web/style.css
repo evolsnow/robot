@@ -16,6 +16,10 @@ p {
     display: block !important;
 }
 
+input, input[placeholder] {
+    text-align: center;
+}
+
 #main {
     position: absolute;
     display: block;

@@ -41,7 +41,7 @@ $(document).ready(function () {
     $State.line = $('#main hr');
 
     $('#userText').addClass('hidden')
-    $('#userButton').addClass('hidden');
+//    $('#userButton').addClass('hidden');
     // Start the triangle blinking
     blinkTriangle();
     chatWebsocket();
@@ -74,7 +74,7 @@ var chatWebsocket = function () {
     if (WebSocket) {
 
         try {
-            var socket = new WebSocket('ws://127.0.0.1:8000/websocket');
+            var socket = new WebSocket('wss://samaritan.tech:8001/websocket');
         } catch (e) {
         }
     }
@@ -85,13 +85,13 @@ var chatWebsocket = function () {
             $State.text.addClass('talk');
             //var hrWidth;
             document.getElementById("msg").innerHTML = event.data
-            //if ($State.text.textWidth() < 1) {
-            //    hrWidth = 80;
-            //} else {
-            //    hrWidth = $State.text.textWidth()
-            //}
+            if ($State.text.textWidth() < 1) {
+                hrWidth = 80;
+            } else {
+                hrWidth = $State.text.textWidth()+20
+            }
             $State.line.animate({
-                'width': ($State.text.textWidth() + 20) + "px"
+                'width': (hrWidth) + "px"
             }, {
                 'duration': $State.wordAnim
             })
@@ -192,7 +192,7 @@ var executeSamaritan = function (phrase) {
                             blinkTriangle();
                             // show textArea
                             $('#userText').removeClass('hidden');
-                            $('#userButton').removeClass('hidden');
+//                            $('#userButton').removeClass('hidden');
                             $State.line.animate({
                                 'width': "80px"
                             }, {
