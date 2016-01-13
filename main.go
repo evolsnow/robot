@@ -14,7 +14,7 @@ func main() {
 	//test()
 	//used for 104
 	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
-	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho")
+	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan")
 	go samaritan.run()
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))

@@ -18,7 +18,8 @@ type robot struct {
 	updates <-chan tgbotapi.Update
 	shutUp  bool
 	//	language []string
-	name string
+	name     string //name from telegram
+	nickName string //user defined name
 }
 
 func (rb *robot) run() {
@@ -27,7 +28,7 @@ func (rb *robot) run() {
 	}
 }
 
-func newRobot(token string) *robot {
+func newRobot(token, nickName string) *robot {
 	var rb = new(robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
@@ -36,6 +37,7 @@ func newRobot(token string) *robot {
 	}
 	rb.bot.Debug = false
 	rb.name = rb.bot.Self.UserName
+	rb.nickName = nickName
 	log.Printf("Authorized on account %s", rb.name)
 	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + rb.bot.Token))
 	if err != nil {
@@ -44,109 +46,6 @@ func newRobot(token string) *robot {
 	rb.updates, _ = rb.bot.ListenForWebhook("/" + rb.bot.Token)
 	return rb
 }
-
-//func main() {
-//	//test()
-//	//used for 104
-//	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
-//
-//	//	go func() {
-//	//		http.Handle("/websocket", websocket.Handler(socketHandler))
-//	//		log.Fatal(http.ListenAndServe("localhost:8000", nil))
-//	//	}()
-//	go http.ListenAndServe("0.0.0.0:8000", nil)
-//	go jarvis()
-//	var err error
-//	bot, err = tgbotapi.NewBotAPI("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	bot.Debug = false
-//	log.Printf("Authorized on account %s", bot.Self.UserName)
-//
-//	//used for 104
-//	//_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert("https://104.236.156.226:8443/"+bot.Token, "server.crt"))
-//	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + bot.Token))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	updates, _ := bot.ListenForWebhook("/" + bot.Token)
-//	for update := range updates {
-//		go handlerUpdate(update)
-//	}
-//}
-
-//func jarvis() {
-//	jabot, err := tgbotapi.NewBotAPI("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	log.Printf("Authorized on account %s", jabot.Self.UserName)
-//	_, err = jabot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + jabot.Token))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	updates, _ := jabot.ListenForWebhook("/" + jabot.Token)
-//	jabot.Debug = false
-//	for update := range updates {
-//		go func(update tgbotapi.Update) {
-//			//			zh := false
-//			info := update.Message.Text
-//			rawMsg := ""
-//			defer func() {
-//				if p := recover(); p != nil {
-//					err := fmt.Errorf("internal error: %v", p)
-//					log.Println(err)
-//				}
-//			}()
-//
-//			if strings.Contains(info, "@SnowJarvisBot") {
-//				if strings.Contains(info, "闭嘴") || strings.Contains(info, "别说话") {
-//					shutUpJa = true
-//				} else if strings.Contains(info, "说话") {
-//					shutUpJa = false
-//					rawMsg = "jarvis终于可以说话啦~"
-//				}
-//				info = strings.Replace(info, "@EvolsnowBot", "", -1)
-//			}
-//			if shutUpJa {
-//				return
-//			}
-//			log.Println(info)
-//			// SimBot
-//			//			for _, r := range info {
-//			//				if unicode.Is(unicode.Scripts["Han"], r) {
-//			//					info = strings.Replace(info, " ", "", -1)
-//			//					zh = true
-//			//					break
-//			//				}
-//			//			}
-//
-//			//			if rawMsg != "" {
-//			//			} else if zh {
-//			//				rawMsg = simAI(info, "ch")
-//			//			} else {
-//			//				rawMsg = simAI(info, "en")
-//			//			}
-//			//			if strings.Contains(rawMsg, "I HAVE NO RESPONSE.") {
-//			//				rawMsg = "ah...I don't know"
-//			//			}
-//			if rawMsg != "" {
-//			} else {
-//				rawMsg = qinAI(info)
-//			}
-//			msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
-//			msg.ParseMode = "markdown"
-//			_, err := jabot.Send(msg)
-//			if err != nil {
-//				panic(err)
-//			}
-//
-//		}(update)
-//	}
-//}
 
 func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	defer func() {
@@ -191,23 +90,21 @@ func (rb *robot) Start(update tgbotapi.Update) string {
 func (rb *robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	chinese := false
-	if strings.Contains(info, "@EvolsnowBot") {
+	if strings.Contains(info, rb.name) {
 		if strings.Contains(info, "闭嘴") || strings.Contains(info, "别说话") {
 			rb.shutUp = true
-		} else if strings.Contains(info, "说话") {
+		} else if rb.shutUp && strings.Contains(info, "说话") {
 			rb.shutUp = false
-			return "samaritan终于可以说话啦~"
+			return fmt.Sprintf("%s终于可以说话啦", rb.nickName)
 		}
-		info = strings.Replace(info, "@EvolsnowBot", "", -1)
+		info = strings.Replace(info, fmt.Sprintf("@%s", rb.name), "", -1)
 	}
-	//	if text := strings.Split(info, " "); text[0] == "@EvolsnowBot" {
-	//		info = strings.Join(text[1:], " ")
-	//	}
+
 	if rb.shutUp {
 		return ""
 	}
 	log.Println(info)
-	var response string
+	//	var response string
 	for _, r := range info {
 		if unicode.Is(unicode.Scripts["Han"], r) {
 			info = strings.Replace(info, " ", "", -1)
@@ -215,12 +112,16 @@ func (rb *robot) Talk(update tgbotapi.Update) string {
 			break
 		}
 	}
-	if chinese {
-		response = tlAI(info)
-	} else {
-		response = mitAI(info)
+	if rb.nickName == "samaritan" {
+		if chinese {
+			return tlAI(info)
+		} else {
+			return mitAI(info)
+		}
+	} else { //jarvis use another AI
+		return qinAI(info)
 	}
-	return response
+	//	return response
 }
 
 func tlAI(info string) string {
@@ -243,19 +144,19 @@ type tlReply struct {
 	Text string `json:"text"`
 }
 
-func simAI(info, lc string) string {
-	info = strings.Replace(info, " ", "+", -1)
-	simURL := fmt.Sprintf("http://www.simsimi.com/requestChat?lc=%s&ft=1.0&req=%s&uid=58642449&did=0", lc, info)
-	resp, err := http.Get(simURL)
-	if err != nil {
-		log.Println(err.Error())
-	}
-	defer resp.Body.Close()
-	reply := new(simReply)
-	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(reply)
-	return strings.Replace(reply.Res.Msg, "<br>", "\n", -1)
-}
+//func simAI(info, lc string) string {
+//	info = strings.Replace(info, " ", "+", -1)
+//	simURL := fmt.Sprintf("http://www.simsimi.com/requestChat?lc=%s&ft=1.0&req=%s&uid=58642449&did=0", lc, info)
+//	resp, err := http.Get(simURL)
+//	if err != nil {
+//		log.Println(err.Error())
+//	}
+//	defer resp.Body.Close()
+//	reply := new(simReply)
+//	decoder := json.NewDecoder(resp.Body)
+//	decoder.Decode(reply)
+//	return strings.Replace(reply.Res.Msg, "<br>", "\n", -1)
+//}
 
 type simReply struct {
 	result int `json:"code"`
