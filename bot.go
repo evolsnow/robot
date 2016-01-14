@@ -40,7 +40,7 @@ func newRobot(token, nickName string) *robot {
 	}
 	rb.name = rb.bot.Self.UserName
 	rb.nickName = nickName
-	log.Printf("Authorized on account %s", rb.name)
+	log.Printf("%s: Authorized on account %s", rb.nickName, rb.name)
 	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + rb.bot.Token))
 	if err != nil {
 		log.Fatal(err)
