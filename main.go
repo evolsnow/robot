@@ -69,9 +69,11 @@ func socketHandler(ws *websocket.Conn) {
 		//		}
 		//		websocket.Message.Send(ws, "")
 		go func(ws *websocket.Conn, ret []string) {
+			log.Println("new words")
 			for i := range ret {
 				if len(queue) > 1 {
 					<-queue
+					log.Println(len(queue))
 					return
 				} else {
 					websocket.Message.Send(ws, ret[i])
