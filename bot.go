@@ -38,7 +38,6 @@ func newRobot(token, nickName string) *robot {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rb.bot.Debug = false
 	rb.name = rb.bot.Self.UserName
 	rb.nickName = nickName
 	log.Printf("Authorized on account %s", rb.name)
