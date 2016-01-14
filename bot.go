@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
@@ -16,6 +17,8 @@ import (
 
 var saidGoodBye = make(chan int, 1)
 
+const masterChatId = 82957299
+
 type robot struct {
 	bot     *tgbotapi.BotAPI
 	updates <-chan tgbotapi.Update
@@ -26,6 +29,13 @@ type robot struct {
 }
 
 func (rb *robot) run() {
+	if rb.nickName == "samaritan" {
+		chatId := conn.GetMasterId()
+		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back")
+		if _, err := rb.bot.Send(msg); err != nil {
+			log.Fatal("evolution failed")
+		}
+	}
 	for update := range rb.updates {
 		go handlerUpdate(rb, update)
 	}
@@ -70,8 +80,8 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 			rawMsg = rb.Talk(update)
 		case "/evolve":
 			rawMsg = "self upgrading..."
-			log.Println(rawMsg)
-		//go rb.Evolve()
+			go conn.SetMasterId(chatId)
+			go rb.Evolve()
 		default:
 			rawMsg = "unknow command, type /help?"
 		}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
 	"log"
 	"net/http"
@@ -11,16 +12,22 @@ import (
 )
 
 func main() {
-	//used for 104
-	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
+	conn.Pool = conn.NewPool("127.0.0.1:6379", "", 1)
+	if !conn.Ping("127.0.0.1:6379", "") {
+		log.Fatal("connect to redis server failed")
+	}
+
 	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan")
 	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
-	samaritan.bot.Debug = true
+	//	samaritan.bot.Debug = true
 	go samaritan.run()
 	go jarvis.run()
+
 	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	//used for 104
+	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
 }
 
 func socketHandler(ws *websocket.Conn) {
