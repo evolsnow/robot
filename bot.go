@@ -137,9 +137,12 @@ func (rb *robot) Evolve(update tgbotapi.Update) {
 }
 
 func (rb *robot) Translate(update tgbotapi.Update) string {
-	info, err := "翻译" + strings.SplitAfterN(update.Message.Text, " ", 2)[1]
-	if err != nil {
+	raw := strings.SplitAfterN(update.Message.Text, " ", 2)
+	info := ""
+	if len(raw) < 2 {
 		return "what do you want to translate, try '/trans cat'?"
+	} else {
+		info = "翻译" + raw[1]
 	}
 	log.Println(info)
 	return qinAI(info)
