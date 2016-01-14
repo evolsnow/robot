@@ -107,7 +107,7 @@ var chatWebsocket = function () {
 
         function poll() {
             $.ajax({
-                url: '/new-msg/',
+                url: 'https://samaritan.tech:8001/ajax',
                 type: 'GET',
                 success: function (event) {
                     //$msg.append('<p>' + event + '</p>');
@@ -128,7 +128,7 @@ var chatWebsocket = function () {
 
         $('form').submit(function () {
             $.ajax({
-                url: '/new-msg/',
+                url: 'https://samaritan.tech:8001/ajax',
                 type: 'POST',
                 data: {text: $text.val()},
                 success: function () {
