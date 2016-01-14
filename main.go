@@ -82,16 +82,14 @@ func socketHandler(ws *websocket.Conn) {
 					for i := range ret {
 						log.Printf("check wait:%d", wait)
 						if wait > 0 {
-							working--
 							log.Println("new comming")
-							return
+							break
 						}
 						websocket.Message.Send(ws, ret[i])
 						time.Sleep(time.Second)
 					}
 					websocket.Message.Send(ws, "")
 					working--
-					return
 				}(ws, ret)
 			}
 			break
