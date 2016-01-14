@@ -103,10 +103,10 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 
 }
 
-//parse "/help text msg" to "text msg"
-func parseText(text string) string {
-	return strings.SplitAfterN(text, " ", 2)[1]
-}
+////parse "/help text msg" to "text msg"
+//func parseText(text string) string {
+//	return strings.SplitAfterN(text, " ", 2)[1]
+//}
 
 func (rb *robot) Start(update tgbotapi.Update) string {
 	return "welcome: " + update.Message.Chat.UserName
@@ -168,7 +168,6 @@ func (rb *robot) Talk(update tgbotapi.Update) string {
 	//	var response string
 	for _, r := range info {
 		if unicode.Is(unicode.Scripts["Han"], r) {
-			info = strings.TrimSpace(info)
 			chinese = true
 			break
 		}
@@ -186,6 +185,7 @@ func (rb *robot) Talk(update tgbotapi.Update) string {
 }
 
 func tlAI(info string) string {
+	info = strings.Replace(info, " ", "", -1)
 	key := "a5052a22b8232be1e387ff153e823975"
 	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, info)
 	resp, err := http.Get(tuLingURL)
@@ -218,14 +218,14 @@ type tlReply struct {
 //	decoder.Decode(reply)
 //	return strings.Replace(reply.Res.Msg, "<br>", "\n", -1)
 //}
-
-type simReply struct {
-	result int `json:"code"`
-	Res    res
-}
-type res struct {
-	Msg string `json:"msg"`
-}
+//
+//type simReply struct {
+//	result int `json:"code"`
+//	Res    res
+//}
+//type res struct {
+//	Msg string `json:"msg"`
+//}
 
 func qinAI(info string) string {
 	info = strings.Replace(info, " ", "+", -1)

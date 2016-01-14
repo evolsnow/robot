@@ -31,7 +31,7 @@ func main() {
 
 func socketHandler(ws *websocket.Conn) {
 	for {
-		var in, trimIn, response string
+		var in, response string
 		var ret []string
 		sf := func(c rune) bool {
 			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
@@ -44,19 +44,19 @@ func socketHandler(ws *websocket.Conn) {
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
-				trimIn = strings.TrimSpace(in)
-				log.Println(trimIn)
+				in = strings.Replace(in, " ", "", -1)
+				log.Println(in)
 				zh = true
 				break
 			}
 		}
 		if zh {
-			response = tlAI(trimIn)
+			response = tlAI(in)
 			// Separate into fields with func.
 			ret = strings.FieldsFunc(response, sf)
 
 		} else {
-			response = mitAI(trimIn)
+			response = mitAI(in)
 			ret = strings.FieldsFunc(response, sf)
 		}
 		for i := range ret {
