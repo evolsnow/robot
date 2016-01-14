@@ -30,13 +30,6 @@ func main() {
 }
 
 func socketHandler(ws *websocket.Conn) {
-	working, wait := 0, 0
-	go func() {
-		for {
-			time.Sleep(time.Second)
-			fmt.Println(wait)
-		}
-	}()
 	for {
 		var in, response string
 		var ret []string
@@ -48,7 +41,6 @@ func socketHandler(ws *websocket.Conn) {
 			return
 		}
 		fmt.Printf("Received: %s\n", in)
-		wait++
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
@@ -66,33 +58,10 @@ func socketHandler(ws *websocket.Conn) {
 			response = mitAI(in)
 			ret = strings.FieldsFunc(response, sf)
 		}
-		//		for i := range ret {
-		//
-		//			websocket.Message.Send(ws, ret[i])
-		//			time.Sleep(time.Second)
-		//		}
-		//		websocket.Message.Send(ws, "")
-		for {
-			if working > 0 {
-				//wait
-			} else {
-				go func(ws *websocket.Conn, ret []string) {
-					working++
-					wait--
-					for i := range ret {
-						log.Printf("check wait:%d", wait)
-						if wait > 0 {
-							log.Println("new comming")
-							break
-						}
-						websocket.Message.Send(ws, ret[i])
-						time.Sleep(time.Second)
-					}
-					websocket.Message.Send(ws, "")
-					working--
-				}(ws, ret)
-			}
-			break
+		for i := range ret {
+			websocket.Message.Send(ws, ret[i])
+			time.Sleep(time.Second)
 		}
+		websocket.Message.Send(ws, "")
 	}
 }
