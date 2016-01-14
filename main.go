@@ -31,9 +31,7 @@ func main() {
 
 func socketHandler(ws *websocket.Conn) {
 	queue := make(chan int, 2)
-
 	for {
-		ws.SetDeadline(time.Now().Add(time.Minute * 10))
 		var in, response string
 		var ret []string
 		sf := func(c rune) bool {
@@ -45,6 +43,7 @@ func socketHandler(ws *websocket.Conn) {
 		}
 		fmt.Printf("Received: %s\n", in)
 		queue <- 1
+		fmt.Printf("totally queue: %s\n", len(queue))
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
@@ -69,11 +68,19 @@ func socketHandler(ws *websocket.Conn) {
 		//		}
 		//		websocket.Message.Send(ws, "")
 		go func(ws *websocket.Conn, ret []string) {
-			log.Println("new words")
+			for {
+				if len(queue) > 1 { //have another routine
+					//wait
+					log.Println("have another goroutine")
+				} else {
+					log.Println("I can exec now")
+					break
+				}
+			}
 			for i := range ret {
 				if len(queue) > 1 {
 					<-queue
-					log.Println(len(queue))
+					log.Println("new comming")
 					return
 				} else {
 					websocket.Message.Send(ws, ret[i])
@@ -81,7 +88,6 @@ func socketHandler(ws *websocket.Conn) {
 				time.Sleep(time.Second)
 			}
 			websocket.Message.Send(ws, "")
-
 		}(ws, ret)
 	}
 }
