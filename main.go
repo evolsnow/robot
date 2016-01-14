@@ -72,5 +72,5 @@ func socketHandler(ws *websocket.Conn) {
 
 func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, "from ajax")
+	fmt.Fprintf(w, "from ajax")
 }
