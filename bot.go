@@ -76,12 +76,14 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
-		case "/talk":
-			rawMsg = rb.Talk(update)
+		case "/help":
+			rawMsg = rb.Help(update)
+		case "/trans":
+			rawMsg = rb.Translate(update)
 		case "/evolve":
 			rawMsg = "self upgrading..."
 			go conn.SetMasterId(chatId)
-			go rb.Evolve()
+			go rb.Evolve(update)
 		default:
 			rawMsg = "unknow command, type /help?"
 		}
@@ -103,11 +105,28 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 
 }
 
+func parseText(text string) string {
+	return strings.SplitAfterN(text, " ", 2)[1] //parse "/help text msg" to "text msg"
+}
+
 func (rb *robot) Start(update tgbotapi.Update) string {
 	return "welcome: " + update.Message.Chat.UserName
 }
 
-func (rb *robot) Evolve() {
+func (rb *robot) Help(update tgbotapi.Update) string {
+	helpMsg := `
+		/trans words		translate words between english and chinese
+		/evolve				self-evolution of samaritan
+		/help				show this message
+	`
+	return helpMsg
+}
+
+func (rb *robot) Evolve(update tgbotapi.Update) {
+	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
+		rb.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "sorry, unauthorized"))
+		return
+	}
 	select {
 	case <-saidGoodBye:
 		close(saidGoodBye)
@@ -118,6 +137,12 @@ func (rb *robot) Evolve() {
 	}
 }
 
+func (rb *robot) Translate(update tgbotapi.Update) string {
+	info := "翻译" + strings.SplitAfterN(tgbotapi.Update, " ", 2)[1]
+	log.Println("translate info")
+	return qinAI(info)
+
+}
 func (rb *robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	chinese := false
@@ -138,7 +163,7 @@ func (rb *robot) Talk(update tgbotapi.Update) string {
 	//	var response string
 	for _, r := range info {
 		if unicode.Is(unicode.Scripts["Han"], r) {
-			info = strings.Replace(info, " ", "", -1)
+			info = strings.TrimSpace(info)
 			chinese = true
 			break
 		}
