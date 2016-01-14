@@ -31,6 +31,12 @@ func main() {
 
 func socketHandler(ws *websocket.Conn) {
 	queue := make(chan int, 2)
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			fmt.Println(len(queue))
+		}
+	}()
 	for {
 		var in, response string
 		var ret []string
@@ -43,7 +49,6 @@ func socketHandler(ws *websocket.Conn) {
 		}
 		fmt.Printf("Received: %s\n", in)
 		queue <- 1
-		fmt.Printf("totally queue: %d\n", len(queue))
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
