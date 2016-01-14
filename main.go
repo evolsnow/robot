@@ -71,8 +71,8 @@ func socketHandler(ws *websocket.Conn) {
 }
 
 func ajax(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Origin", "https://samaritan.tech")
 	for {
-		fmt.Fprintf(w, "from ajax")
+		fmt.Fprint(w, "reply from ajax")
 	}
 }

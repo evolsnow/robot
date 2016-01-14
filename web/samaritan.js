@@ -114,6 +114,7 @@ var chatWebsocket = function () {
                     $State.text.addClass('talk');
                     //var hrWidth;
                     document.getElementById("msg").innerHTML = event;
+                    console.log(event);
                     error_sleep_time = 500;
                     poll();
                 },
