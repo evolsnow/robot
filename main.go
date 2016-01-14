@@ -71,6 +71,7 @@ func socketHandler(ws *websocket.Conn) {
 		go func(ws *websocket.Conn, ret []string) {
 			for i := range ret {
 				if len(queue) > 1 {
+					<-queue
 					return
 				} else {
 					websocket.Message.Send(ws, ret[i])
