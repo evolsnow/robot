@@ -30,11 +30,12 @@ func main() {
 }
 
 func socketHandler(ws *websocket.Conn) {
+	queue := make(chan int, 2)
+
 	for {
 		ws.SetDeadline(time.Now().Add(time.Minute * 10))
 		var in, response string
 		var ret []string
-		queue := make(chan int, 2)
 		sf := func(c rune) bool {
 			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 		}
@@ -70,12 +71,11 @@ func socketHandler(ws *websocket.Conn) {
 		go func(ws *websocket.Conn, ret []string) {
 			for i := range ret {
 				if len(queue) > 1 {
-					<-queue
 					return
 				} else {
 					websocket.Message.Send(ws, ret[i])
-					time.Sleep(time.Second)
 				}
+				time.Sleep(time.Second)
 			}
 			websocket.Message.Send(ws, "")
 
