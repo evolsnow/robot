@@ -40,7 +40,7 @@ $(document).ready(function () {
     $State.text = $('#main p');
     $State.line = $('#main hr');
 
-    $('#userText').addClass('hidden')
+    $('#userText').addClass('hidden');
 //    $('#userButton').addClass('hidden');
     // Start the triangle blinking
     blinkTriangle();
@@ -56,14 +56,14 @@ $(document).ready(function () {
     }, $State.wordTime);
 
 
-})
+});
 
 var blinkTriangle = function () {
     // Stop blinking if samaritan is in action
     if ($State.isText)
         return;
     $State.triangle.fadeTo(500, 0).fadeTo(500, 1, blinkTriangle);
-}
+};
 
 var chatWebsocket = function () {
     var $msg = $('#msg');
@@ -84,18 +84,18 @@ var chatWebsocket = function () {
             //$msg.append('<p>' + event.data + '</p>');
             $State.text.addClass('talk');
             //var hrWidth;
-            document.getElementById("msg").innerHTML = event.data
+            document.getElementById("msg").innerHTML = event.data;
             if ($State.text.textWidth() < 1) {
                 hrWidth = 80;
             } else {
-                hrWidth = $State.text.textWidth()+20
+                hrWidth = $State.text.textWidth() + 20
             }
             $State.line.animate({
                 'width': (hrWidth) + "px"
             }, {
                 'duration': $State.wordAnim
             })
-        }
+        };
 
         $('form').submit(function () {
             socket.send($text.val());
@@ -111,7 +111,9 @@ var chatWebsocket = function () {
                 type: 'GET',
                 success: function (event) {
                     //$msg.append('<p>' + event + '</p>');
-                    $msg.html(event);
+                    $State.text.addClass('talk');
+                    //var hrWidth;
+                    document.getElementById("msg").innerHTML = event.data;
                     error_sleep_time = 500;
                     poll();
                 },
@@ -136,13 +138,13 @@ var chatWebsocket = function () {
             return false;
         });
     }
-}
+};
 
 var executeSamaritan = function (phrase) {
     if ($State.isText)
         return;
 
-    $State.isText = true
+    $State.isText = true;
     var phraseArray = phrase.split(" ");
     // First, finish() the blink animation and
     // scale down the marker triangle
@@ -192,6 +194,8 @@ var executeSamaritan = function (phrase) {
                             blinkTriangle();
                             // show textArea
                             $('#userText').removeClass('hidden');
+                            document.querySelector('input').focus();
+
 //                            $('#userButton').removeClass('hidden');
                             $State.line.animate({
                                 'width': "80px"
@@ -205,4 +209,4 @@ var executeSamaritan = function (phrase) {
                 timeStart + $State.wordTime);
         }
     });
-}
+};
