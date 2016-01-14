@@ -98,7 +98,9 @@ func (rb *robot) Evolve() {
 	case <-saidGoodBye:
 		close(saidGoodBye)
 		cmd := exec.Command("/root/evolve")
-		cmd.Start()
+		if err := cmd.Start(); err != nil {
+			log.Println(err.Error())
+		}
 	}
 }
 
