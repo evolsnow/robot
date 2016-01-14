@@ -62,6 +62,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint = received[0]
+		log.Println(endPoint)
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
@@ -70,7 +71,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 		case "/evolve":
 			rawMsg = "self upgrading..."
 			log.Println(rawMsg)
-			go rb.Evolve()
+		//go rb.Evolve()
 		default:
 			rawMsg = "unknow command, type /help?"
 		}
