@@ -69,6 +69,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 			rawMsg = rb.Talk(update)
 		case "/evolve":
 			rawMsg = "self upgrading..."
+			log.Println(rawMsg)
 			go rb.Evolve()
 		default:
 			rawMsg = "unknow command, type /help?"
