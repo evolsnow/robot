@@ -65,11 +65,12 @@ func socketHandler(ws *websocket.Conn) {
 				websocket.Message.Send(ws, ret[i])
 				time.Sleep(time.Second)
 			}
-			websocket.Message.Send(ws, "      ")
+			websocket.Message.Send(ws, "")
 		}(ws, ret)
 	}
 }
 
 func ajax(w http.ResponseWriter, r *http.Request) {
+	r.Header.Add("Access-Control-Allow-Origin:", "*")
 	fmt.Fprint(w, "from ajax")
 }
