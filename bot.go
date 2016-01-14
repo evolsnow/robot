@@ -17,8 +17,6 @@ import (
 
 var saidGoodBye = make(chan int, 1)
 
-const masterChatId = 82957299
-
 type robot struct {
 	bot     *tgbotapi.BotAPI
 	updates <-chan tgbotapi.Update
@@ -138,7 +136,7 @@ func (rb *robot) Evolve(update tgbotapi.Update) {
 }
 
 func (rb *robot) Translate(update tgbotapi.Update) string {
-	info := "翻译" + strings.SplitAfterN(tgbotapi.Update, " ", 2)[1]
+	info := "翻译" + strings.SplitAfterN(update.Message.Text, " ", 2)[1]
 	log.Println(info)
 	return qinAI(info)
 
