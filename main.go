@@ -30,7 +30,7 @@ func main() {
 }
 
 func socketHandler(ws *websocket.Conn) {
-	queue := make(chan int, 3)
+	queue := make(chan int, 2)
 	for {
 		var in, response string
 		var ret []string
@@ -87,6 +87,7 @@ func socketHandler(ws *websocket.Conn) {
 				time.Sleep(time.Second)
 			}
 			websocket.Message.Send(ws, "")
+			<-queue
 		}(ws, ret)
 	}
 }
