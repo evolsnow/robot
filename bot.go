@@ -111,7 +111,7 @@ func (rb *robot) Evolve() {
 	select {
 	case <-saidGoodBye:
 		close(saidGoodBye)
-		cmd := exec.Command("/root/evolve")
+		cmd := exec.Command("bash", "/root/evolve")
 		if err := cmd.Start(); err != nil {
 			log.Println(err.Error())
 		}
