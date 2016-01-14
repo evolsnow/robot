@@ -112,11 +112,12 @@ func (rb *robot) Start(update tgbotapi.Update) string {
 }
 
 func (rb *robot) Help(update tgbotapi.Update) string {
-	helpMsg := `
-		/trans words		translate words between english and chinese
-		/evolve				self-evolution of samaritan
-		/help				show this message
-	`
+	helpMsg :=
+		`
+	/trans - translate words between english and chinese
+	/evolve	- self-evolution of samaritan
+	/help - show this message
+`
 	return helpMsg
 }
 
