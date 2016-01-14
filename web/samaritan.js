@@ -113,7 +113,7 @@ var chatWebsocket = function () {
                     //$msg.append('<p>' + event + '</p>');
                     $State.text.addClass('talk');
                     //var hrWidth;
-                    document.getElementById("msg").innerHTML = event.data;
+                    document.getElementById("msg").innerHTML = event;
                     error_sleep_time = 500;
                     poll();
                 },

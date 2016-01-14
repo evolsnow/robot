@@ -45,7 +45,7 @@ func socketHandler(ws *websocket.Conn) {
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
-				in = strings.Replace(in, " ", "", -1)
+				in = strings.TrimSpace(in)
 				zh = true
 				break
 			}
@@ -72,5 +72,7 @@ func socketHandler(ws *websocket.Conn) {
 
 func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	fmt.Fprintf(w, "from ajax")
+	for {
+		fmt.Fprintf(w, "from ajax")
+	}
 }
