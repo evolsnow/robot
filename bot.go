@@ -8,10 +8,13 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"regexp"
 	"strings"
 	"unicode"
 )
+
+var saidGoodBye = make(chan int, 1)
 
 type robot struct {
 	bot     *tgbotapi.BotAPI
@@ -65,6 +68,9 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 			rawMsg = rb.Start(update)
 		case "/talk":
 			rawMsg = rb.Talk(update)
+		case "/evolve":
+			rawMsg = "self upgrading..."
+			go rb.Evolve()
 		default:
 			rawMsg = "unknow command, type /help?"
 		}
@@ -77,6 +83,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
 	_, err := rb.bot.Send(msg)
+	saidGoodBye <- 1
 	if err != nil {
 		panic(err)
 	}
@@ -85,6 +92,15 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 
 func (rb *robot) Start(update tgbotapi.Update) string {
 	return "welcome: " + update.Message.Chat.UserName
+}
+
+func (rb *robot) Evolve() {
+	select {
+	case <-saidGoodBye:
+		close(saidGoodBye)
+		cmd := exec.Command("/root/evolve")
+		cmd.Start()
+	}
 }
 
 func (rb *robot) Talk(update tgbotapi.Update) string {

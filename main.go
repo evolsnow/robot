@@ -15,8 +15,10 @@ func main() {
 	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
 	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan")
 	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
+	samaritan.bot.Debug = true
 	go samaritan.run()
 	go jarvis.run()
+	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
@@ -59,4 +61,8 @@ func socketHandler(ws *websocket.Conn) {
 			websocket.Message.Send(ws, "      ")
 		}(ws, ret)
 	}
+}
+
+func ajax(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "from ajax")
 }
