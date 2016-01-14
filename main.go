@@ -30,11 +30,11 @@ func main() {
 }
 
 func socketHandler(ws *websocket.Conn) {
-	queue, wait := 0, 0
+	working, wait := 0, 0
 	go func() {
 		for {
 			time.Sleep(time.Second)
-			fmt.Println(queue)
+			fmt.Println(wait)
 		}
 	}()
 	for {
@@ -48,7 +48,6 @@ func socketHandler(ws *websocket.Conn) {
 			return
 		}
 		fmt.Printf("Received: %s\n", in)
-		queue++
 		wait++
 		zh := false
 		for _, r := range in {
@@ -74,19 +73,15 @@ func socketHandler(ws *websocket.Conn) {
 		//		}
 		//		websocket.Message.Send(ws, "")
 		for {
-			if queue > 1 {
+			if working > 0 {
 				//wait
 			} else {
 				go func(ws *websocket.Conn, ret []string) {
-					defer func() {
-						queue--
-					}()
+					working++
+					wait--
 					for i := range ret {
 						if wait > 0 {
-							defer func() {
-								wait--
-								queue--
-							}()
+							working--
 							log.Println("new comming")
 							return
 						}
@@ -94,6 +89,7 @@ func socketHandler(ws *websocket.Conn) {
 						time.Sleep(time.Second)
 					}
 					websocket.Message.Send(ws, "")
+					working--
 					return
 				}(ws, ret)
 			}
