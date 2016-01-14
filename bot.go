@@ -29,7 +29,7 @@ type robot struct {
 func (rb *robot) run() {
 	if rb.nickName == "samaritan" {
 		chatId := conn.GetMasterId()
-		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back")
+		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
 		if _, err := rb.bot.Send(msg); err != nil {
 			log.Fatal("evolution failed")
 		}
@@ -79,7 +79,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 		case "/trans":
 			rawMsg = rb.Translate(update)
 		case "/evolve":
-			rawMsg = "self upgrading..."
+			rawMsg = "upgrading..."
 			go conn.SetMasterId(chatId)
 			go rb.Evolve(update)
 		default:
@@ -103,8 +103,9 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 
 }
 
+//parse "/help text msg" to "text msg"
 func parseText(text string) string {
-	return strings.SplitAfterN(text, " ", 2)[1] //parse "/help text msg" to "text msg"
+	return strings.SplitAfterN(text, " ", 2)[1]
 }
 
 func (rb *robot) Start(update tgbotapi.Update) string {
@@ -136,7 +137,10 @@ func (rb *robot) Evolve(update tgbotapi.Update) {
 }
 
 func (rb *robot) Translate(update tgbotapi.Update) string {
-	info := "翻译" + strings.SplitAfterN(update.Message.Text, " ", 2)[1]
+	info, err := "翻译" + strings.SplitAfterN(update.Message.Text, " ", 2)[1]
+	if err != nil {
+		return "what do you want to translate, try '/trans cat'?"
+	}
 	log.Println(info)
 	return qinAI(info)
 

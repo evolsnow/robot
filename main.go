@@ -23,7 +23,6 @@ func main() {
 	go samaritan.run()
 	go jarvis.run()
 
-	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 	//used for 104
@@ -57,26 +56,19 @@ func socketHandler(ws *websocket.Conn) {
 
 		} else {
 			response = mitAI(in)
-			//			ret = strings.Split(response, ",")
 			ret = strings.FieldsFunc(response, sf)
 		}
-		go func(ws *websocket.Conn, ret []string) {
-			for i := range ret {
-				websocket.Message.Send(ws, ret[i])
-				time.Sleep(time.Second)
-			}
-			websocket.Message.Send(ws, "")
-		}(ws, ret)
-	}
-}
-
-func ajax(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "https://samaritan.tech")
-	if r.Method == "GET" {
-		for {
-			fmt.Fprint(w, "reply from ajax")
+		for i := range ret {
+			websocket.Message.Send(ws, ret[i])
+			time.Sleep(time.Second)
 		}
-	} else {
-		fmt.Fprint(w, r.Method)
+		websocket.Message.Send(ws, "")
+		//		go func(ws *websocket.Conn, ret []string) {
+		//			for i := range ret {
+		//				websocket.Message.Send(ws, ret[i])
+		//				time.Sleep(time.Second)
+		//			}
+		//			websocket.Message.Send(ws, "")
+		//		}(ws, ret)
 	}
 }
