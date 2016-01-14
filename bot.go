@@ -139,7 +139,7 @@ func (rb *robot) Evolve(update tgbotapi.Update) {
 
 func (rb *robot) Translate(update tgbotapi.Update) string {
 	info := "翻译" + strings.SplitAfterN(tgbotapi.Update, " ", 2)[1]
-	log.Println("translate info")
+	log.Println(info)
 	return qinAI(info)
 
 }
