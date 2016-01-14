@@ -31,7 +31,7 @@ func main() {
 
 func socketHandler(ws *websocket.Conn) {
 	for {
-		ws.SetDeadline(time.Now().Add(time.Second * 10))
+		ws.SetDeadline(time.Now().Add(time.Minute * 10))
 		var in, response string
 		var ret []string
 		queue := make(chan int, 2)
