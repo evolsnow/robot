@@ -45,6 +45,7 @@ func socketHandler(ws *websocket.Conn) {
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
 				in = strings.TrimSpace(in)
+				log.Println(in)
 				zh = true
 				break
 			}
