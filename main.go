@@ -78,10 +78,15 @@ func socketHandler(ws *websocket.Conn) {
 				//wait
 			} else {
 				go func(ws *websocket.Conn, ret []string) {
-
+					defer func() {
+						queue--
+					}()
 					for i := range ret {
 						if wait > 0 {
-							queue--
+							defer func() {
+								wait--
+								queue--
+							}()
 							log.Println("new comming")
 							return
 						}
@@ -89,7 +94,7 @@ func socketHandler(ws *websocket.Conn) {
 						time.Sleep(time.Second)
 					}
 					websocket.Message.Send(ws, "")
-					queue--
+					return
 				}(ws, ret)
 			}
 			break
