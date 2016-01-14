@@ -80,7 +80,7 @@ func socketHandler(ws *websocket.Conn) {
 					working++
 					wait--
 					for i := range ret {
-						fmt.Sprintf("check wait:%d", wait)
+						log.Printf("check wait:%d", wait)
 						if wait > 0 {
 							working--
 							log.Println("new comming")
