@@ -58,10 +58,10 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	}()
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
-	rawMsg := ""
+	var endPoint, rawMsg string
 	if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
-		endPoint := received[0]
+		endPoint = received[0]
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
@@ -83,7 +83,9 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
 	_, err := rb.bot.Send(msg)
-	saidGoodBye <- 1
+	if endPoint == "/evolve" {
+		saidGoodBye <- 1
+	}
 	if err != nil {
 		panic(err)
 	}
