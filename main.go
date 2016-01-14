@@ -34,7 +34,7 @@ func socketHandler(ws *websocket.Conn) {
 		ws.SetDeadline(time.Now().Add(time.Second * 10))
 		var in, response string
 		var ret []string
-		interrupt := make(chan int)
+		queue := make(chan int, 2)
 		sf := func(c rune) bool {
 			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 		}
@@ -43,7 +43,7 @@ func socketHandler(ws *websocket.Conn) {
 			return
 		}
 		fmt.Printf("Received: %s\n", in)
-		interrupt <- 1
+		queue <- 1
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
@@ -68,16 +68,17 @@ func socketHandler(ws *websocket.Conn) {
 		//		}
 		//		websocket.Message.Send(ws, "")
 		go func(ws *websocket.Conn, ret []string) {
-			select {
-			case <-interrupt:
-				return
-			default:
-				for i := range ret {
+			for i := range ret {
+				if len(queue) > 1 {
+					<-queue
+					return
+				} else {
 					websocket.Message.Send(ws, ret[i])
 					time.Sleep(time.Second)
 				}
-				websocket.Message.Send(ws, "")
 			}
+			websocket.Message.Send(ws, "")
+
 		}(ws, ret)
 	}
 }
