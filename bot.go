@@ -40,7 +40,6 @@ func (rb *Robot) run() {
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
-	log.Println("make new robot")
 	var rb = new(Robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
