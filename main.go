@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	config, err := ParseConfig("config.json")
+	config, err := ParseConfig("config_jarvis.json")
 	if err != nil {
 		log.Fatal("a vailid json config file must exist")
 	}
@@ -26,10 +26,8 @@ func main() {
 	}
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
 
-	for i := range config.Robots {
-		robot := newRobot(config.Robots[i].Token, config.Robots[i].Name, config.WebHookAddress)
-		go robot.run()
-	}
+	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookAddress)
+	go robot.run()
 
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	srvPort := strconv.Itoa(config.Port)

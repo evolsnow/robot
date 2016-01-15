@@ -1,16 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -35,10 +30,10 @@ type Action struct {
 }
 
 type Task struct {
-	ChatId   int
-	Owner    string
-	Desc     string
-	Duration time.Duration
+	ChatId int
+	Owner  string
+	Desc   string
+	When   time.Time
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
@@ -60,13 +55,9 @@ func newRobot(token, nickName, webHook string) *Robot {
 }
 
 func (rb *Robot) run() {
-	if rb.nickName == "samaritan" {
-		chatId := conn.GetMasterId()
-		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
-		if _, err := rb.bot.Send(msg); err != nil {
-			log.Println("evolution failed")
-		}
-	}
+	chatId := conn.GetMasterId()
+	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
+	rb.bot.Send(msg)
 	for update := range rb.updates {
 		go handlerUpdate(rb, update)
 	}
@@ -79,7 +70,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			log.Println(err)
 		}
 	}()
-	user := update.Message.Chat.UserName + ":" + rb.nickName
+	user := update.Message.Chat.UserName
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
@@ -139,7 +130,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
-	go conn.SetUserChatId(user+":"+rb.nickName, update.Message.Chat.ID)
+	go conn.SetUserChatId(user, update.Message.Chat.ID)
 	return "welcome: " + user
 }
 
@@ -219,7 +210,7 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 }
 
 func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
-	user := update.Message.Chat.UserName + ":" + rb.nickName
+	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
@@ -273,18 +264,17 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			}
 		}
 		tmpTask := userTask[user]
-		tmpTask.Duration = du
+		tmpTask.When = scheduledTime
 		userTask[user] = tmpTask
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
-			owner := ts.Owner
-			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", owner, ts.Desc)
+			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 			msg.ParseMode = "markdown"
 			<-timer.C
 			_, err := rb.bot.Send(msg)
 			if err != nil {
-				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(owner), rawMsg))
+				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 			}
 			delete(userTask, user)
 		}(rb, userTask[user])
@@ -293,91 +283,4 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		return fmt.Sprintf("Ok, I will remind you to %s later", userTask[user].Desc)
 	}
 	return ""
-}
-
-func tlAI(info string) string {
-	info = strings.Replace(info, " ", "", -1)
-	key := "a5052a22b8232be1e387ff153e823975"
-	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, info)
-	resp, err := http.Get(tuLingURL)
-	if err != nil {
-		log.Println(err.Error())
-	}
-	defer resp.Body.Close()
-	reply := new(tlReply)
-	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(reply)
-	log.Printf("reply from tuling machine: %s", reply.Text+"\n"+reply.Url)
-	return reply.Text + "\n" + reply.Url
-}
-
-type tlReply struct {
-	code int    `json:"code"`
-	Url  string `json:"url,omitempty"`
-	Text string `json:"text"`
-}
-
-//func simAI(info, lc string) string {
-//	info = strings.Replace(info, " ", "+", -1)
-//	simURL := fmt.Sprintf("http://www.simsimi.com/requestChat?lc=%s&ft=1.0&req=%s&uid=58642449&did=0", lc, info)
-//	resp, err := http.Get(simURL)
-//	if err != nil {
-//		log.Println(err.Error())
-//	}
-//	defer resp.Body.Close()
-//	reply := new(simReply)
-//	decoder := json.NewDecoder(resp.Body)
-//	decoder.Decode(reply)
-//	return strings.Replace(reply.Res.Msg, "<br>", "\n", -1)
-//}
-//
-//type simReply struct {
-//	result int `json:"code"`
-//	Res    res
-//}
-//type res struct {
-//	Msg string `json:"msg"`
-//}
-
-func qinAI(info string) string {
-	info = strings.Replace(info, " ", "+", -1)
-	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", info)
-	resp, err := http.Get(qinURL)
-	if err != nil {
-		log.Println(err.Error())
-	}
-	defer resp.Body.Close()
-	reply := new(qinReply)
-	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(reply)
-	log.Printf("reply from qingyunke machine: %s", reply.Content)
-	ret := strings.Replace(reply.Content, "{br}", "\n", -1)
-	return strings.Replace(ret, "菲菲", "Jarvis", -1)
-}
-
-type qinReply struct {
-	result  int    `json:"resulte"`
-	Content string `json:"content"`
-}
-
-func mitAI(info string) string {
-	mitURL := "http://fiddle.pandorabots.com/pandora/talk?botid=9fa364f2fe345a10&skin=demochat"
-	resp, err := http.PostForm(mitURL, url.Values{"message": {info}, "botcust2": {"d064e07d6e067535"}})
-	if err != nil {
-		log.Println(err.Error())
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	re, _ := regexp.Compile("Mitsuku:</B>(.*?)<br> <br>")
-	all := re.FindAll(body, -1)
-	if len(all) == 0 {
-		return "change another question?"
-	}
-	found := (string(all[0]))
-	log.Printf("reply from mitsuku machine: %s", found)
-	ret := strings.Replace(found, `<P ALIGN="CENTER"><img src="http://`, "", -1)
-	ret = strings.Replace(ret, `"></img></P>`, "", -1)
-	ret = strings.Replace(ret[13:], "<br>", "\n", -1)
-	ret = strings.Replace(ret, "Mitsuku", "samaritan", -1)
-	return ret
 }

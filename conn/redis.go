@@ -33,3 +33,10 @@ func GetUserChatId(user string) int {
 	id, _ := redis.Int(c.Do("GET", key))
 	return id
 }
+
+func SaveTask() {
+	c := Pool.Get()
+	defer c.Close()
+	//	id:=incr(taskIncrId)
+	//	rpush task
+}

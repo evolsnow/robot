@@ -1,19 +1,11 @@
 {
-  "server": "127.0.0.1",
+  "server": "0.0.0.0",
   "port": 8000,
   "webhook_address": "https://www.example.com:8443/",
   "redis_address": "127.0.0.1",
   "redis_port": 6379,
   "redis_db": 2,
   "redis_password": null,
-  "robots": [
-    {
-      "name": "the name you want to name the robot",
-      "token": "{your robot token}"
-    },
-    {
-      "name": "name2",
-      "token": "{your robot token2}"
-    }
-  ]
+  "robot_name":"{robot's name by yourself}",
+  "robot_token":"{robot's token from BotFather}"
 }
