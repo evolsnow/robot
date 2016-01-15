@@ -72,6 +72,7 @@ func mitAI(info string) string {
 	ret := strings.Replace(found, `<P ALIGN="CENTER"><img src="http://`, "", -1)
 	ret = strings.Replace(ret, `"></img></P>`, "", -1)
 	ret = strings.Replace(ret[13:], "<br>", "\n", -1)
+	ret = strings.Replace(ret, "xloadswf2.", "", -1)
 	ret = strings.Replace(ret, "Mitsuku", "samaritan", -1)
 	return ret
 }
