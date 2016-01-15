@@ -28,14 +28,10 @@ func main() {
 	if !conn.Ping(redisServer, config.RedisPassword) {
 		log.Fatal("connect to redis server failed")
 	}
-	srvPort := strconv.Itoa(config.Port)
-
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
-	//	webHookServer := net.JoinHostPort(config.WebHookUrl, srvPort)
-	//	log.Println(webHookServer)
 	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
 	go robot.run()
-
+	srvPort := strconv.Itoa(config.Port)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	//	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))

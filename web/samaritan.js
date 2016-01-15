@@ -74,7 +74,7 @@ var chatWebsocket = function () {
     if (WebSocket) {
 
         try {
-            var socket = new WebSocket('wss://samaritan.tech:8001/websocket');
+            var socket = new WebSocket('wss://samaritan.tech:8443/websocket');
         } catch (e) {
         }
     }
