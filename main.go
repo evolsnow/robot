@@ -29,7 +29,7 @@ func main() {
 		log.Fatal("connect to redis server failed")
 	}
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
-	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
+	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl, config.Cert)
 	go robot.run()
 	srvPort := strconv.Itoa(config.Port)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
