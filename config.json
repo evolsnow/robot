@@ -3,7 +3,7 @@
   "cert": "cert.pem",
   "cert_key": "key.pem",
   "port": 8443,
-  "webhook_url": "https://www.example.com",
+  "webhook_url": "https://www.example.com:8443/",
   "redis_address": "127.0.0.1",
   "redis_port": 6379,
   "redis_db": 2,

@@ -36,7 +36,7 @@ type Task struct {
 	When   time.Time
 }
 
-func newRobot(token, nickName, webHook, cert string) *Robot {
+func newRobot(token, nickName, webHook string) *Robot {
 	var rb = new(Robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
@@ -46,7 +46,7 @@ func newRobot(token, nickName, webHook, cert string) *Robot {
 	rb.name = rb.bot.Self.UserName
 	rb.nickName = nickName
 	log.Printf("%s: Authorized on account %s", rb.nickName, rb.name)
-	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhookWithCert(webHook+rb.bot.Token, cert))
+	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook(webHook + rb.bot.Token))
 	if err != nil {
 		log.Fatal(err)
 	}
