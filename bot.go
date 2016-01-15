@@ -101,6 +101,9 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "/trans":
 			rawMsg = rb.Translate(update)
 		case "/todo":
+			tmpAction := userAction[user]
+			tmpAction.ActionName = "setReminder"
+			userAction[user] = tmpAction
 			rawMsg = rb.SetReminder(update, 0)
 		case "/evolve":
 			rawMsg = "upgrading..."
