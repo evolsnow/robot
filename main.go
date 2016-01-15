@@ -31,12 +31,6 @@ func main() {
 		go robot.run()
 	}
 
-	//	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan", config.WebHookAddress)
-	//	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
-	//	//	samaritan.bot.Debug = true
-	//	go samaritan.run()
-	//	go jarvis.run()
-
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	srvPort := strconv.Itoa(config.Port)
 	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
@@ -44,6 +38,7 @@ func main() {
 	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
 }
 
+//used for web samaritan robot
 func socketHandler(ws *websocket.Conn) {
 	for {
 		var in, response string

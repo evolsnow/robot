@@ -145,7 +145,6 @@ func (rb *Robot) Translate(update tgbotapi.Update) string {
 	} else {
 		info = "翻译" + raw[1]
 	}
-	log.Println(info)
 	return qinAI(info)
 
 }
