@@ -17,6 +17,7 @@ import (
 func main() {
 	var configFile string
 	flag.StringVar(&configFile, "c", "config.json", "specify config file")
+	flag.Parse()
 	config, err := ParseConfig(configFile)
 	if err != nil {
 		log.Fatal("a vailid json config file must exist")
