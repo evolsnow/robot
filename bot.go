@@ -89,7 +89,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		}
 	} else if string([]rune(text)[:2]) == "翻译" {
-		rb.Translate(update)
+		rawMsg = rb.Translate(update)
 	} else if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint = received[0]
