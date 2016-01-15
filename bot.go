@@ -79,9 +79,9 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			log.Println(err)
 		}
 	}()
-
 	user := update.Message.Chat.UserName + ":" + rb.nickName
 	text := update.Message.Text
+	log.Println(string([]rune(text)[:2]))
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
 	if action, ok := userAction[user]; ok { //detect if user is in interaction mode
@@ -90,6 +90,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		}
 	} else if string([]rune(text)[:2]) == "翻译" {
+		log.Println("get!")
 		rb.Translate(update)
 	} else if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
