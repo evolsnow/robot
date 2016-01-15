@@ -279,11 +279,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			if err != nil {
 				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 			}
-
+			//			delete(userTask, user)
 		}(rb, userTask[user])
 
 		delete(userAction, user)
-		delete(userTask, user)
 		return fmt.Sprintf("Ok, I will remind you to %s later", userTask[user].Desc)
 	}
 	return ""
