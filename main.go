@@ -38,7 +38,8 @@ func main() {
 	//	go jarvis.run()
 
 	http.Handle("/websocket", websocket.Handler(socketHandler))
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	srvPort := strconv.Itoa(config.Port)
+	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
 	//used for 104
 	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
 }
