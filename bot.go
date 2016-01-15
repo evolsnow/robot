@@ -46,7 +46,8 @@ func newRobot(token, nickName, webHook string) *Robot {
 	rb.name = rb.bot.Self.UserName
 	rb.nickName = nickName
 	log.Printf("%s: Authorized on account %s", rb.nickName, rb.name)
-	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook(webHook + rb.bot.Token))
+	res, err := rb.bot.SetWebhook(tgbotapi.NewWebhook(webHook + rb.bot.Token))
+	log.Println(res)
 	if err != nil {
 		log.Fatal(err)
 	}
