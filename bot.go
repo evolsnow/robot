@@ -80,7 +80,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		}
 	}()
 
-	user := update.Message.Chat.UserName
+	user := update.Message.Chat.UserName + ":" + rb.nickName
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
@@ -144,6 +144,7 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
+/alarm - set a reminder
 /trans - translate words between english and chinese
 /evolve	- self evolution of samaritan
 /help - show this help message
@@ -212,7 +213,7 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 }
 
 func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
-	user := update.Message.Chat.UserName
+	user := update.Message.Chat.UserName + ":" + rb.nickName
 	switch step {
 	case 0:
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
@@ -224,7 +225,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
-		return "Ok, what should I reminde you to do?"
+		return "Ok, what should I remind you to do?"
 	case 1:
 		//save thing
 		tmpTask := userTask[user]
@@ -235,9 +236,9 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
 		return "When or how much time after?\n" +
-			"You can type '2/14 11:30' means 11:30 at 2/14 \n" + //first format
-			"Or type '11:30' means at 11:30 today" + //second format
-			"Or type '5m10s' means 5 minutes 10 seconds later" //third format
+			"You can type *2/14 11:30* means 11:30 at 2/14 \n" + //first format
+			"Or type *11:30* means at 11:30 today" + //second format
+			"Or type *5m10s* means 5 minutes 10 seconds later" //third format
 	case 2:
 		//save time duration
 		text := update.Message.Text
@@ -271,19 +272,19 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
 			<-timer.C
-			rawMsg := fmt.Sprintf("Hi: %s.\nMaybe it's time to:\n%s", ts.Owner, ts.Desc)
+			rawMsg := fmt.Sprintf("Hi %s.\nMaybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 			msg.ParseMode = "markdown"
 			_, err := rb.bot.Send(msg)
 			if err != nil {
-				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner+":"+rb.nickName), rawMsg))
+				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 			}
 
 		}(rb, userTask[user])
 
 		delete(userAction, user)
 		delete(userTask, user)
-		return "ok"
+		return "Ok, I will remind that for you later"
 	}
 	return ""
 }
