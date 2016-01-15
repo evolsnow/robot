@@ -28,16 +28,17 @@ func main() {
 	if !conn.Ping(redisServer, config.RedisPassword) {
 		log.Fatal("connect to redis server failed")
 	}
-	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
+	srvPort := strconv.Itoa(config.Port)
 
-	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookAddress)
+	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
+	webHookServer := net.JoinHostPort(config.WebHookUrl, srvPort)
+	robot := newRobot(config.RobotToken, config.RobotName, webHookServer)
 	go robot.run()
 
 	http.Handle("/websocket", websocket.Handler(socketHandler))
-	srvPort := strconv.Itoa(config.Port)
-	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
-	//used for 104
-	//go http.ListenAndServeTLS("0.0.0.0:8443", "server.crt", "server.key", nil)
+	//	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
+	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
+
 }
 
 //used for web samaritan robot

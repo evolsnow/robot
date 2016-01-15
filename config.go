@@ -7,15 +7,18 @@ import (
 )
 
 type Config struct {
-	Server         string `json:"server"`
-	Port           int    `json:"port"`
-	WebHookAddress string `json:"webhook_address"`
-	RedisAddress   string `json:"redis_address"`
-	RedisPort      int    `json:"redis_port"`
-	RedisDB        int    `json:"redis_db"`
-	RedisPassword  string `json:"redis_password"`
-	RobotName      string `json:"robot_name"`
-	RobotToken     string `json:"robot_token"`
+	Server  string `json:"server"`
+	Port    int    `json:"port"`
+	Cert    string `json:"cert"`
+	CertKey string `json:"cert_key"`
+
+	WebHookUrl    string `json:"webhook_url"`
+	RedisAddress  string `json:"redis_address"`
+	RedisPort     int    `json:"redis_port"`
+	RedisDB       int    `json:"redis_db"`
+	RedisPassword string `json:"redis_password"`
+	RobotName     string `json:"robot_name"`
+	RobotToken    string `json:"robot_token"`
 }
 
 func ParseConfig(path string) (config *Config, err error) {
