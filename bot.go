@@ -279,7 +279,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			if err != nil {
 				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 			}
-			//			delete(userTask, user)
+			delete(userTask, user)
 		}(rb, userTask[user])
 
 		delete(userAction, user)
