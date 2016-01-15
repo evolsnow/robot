@@ -17,7 +17,7 @@ func tlAI(info string) string {
 	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, info)
 	resp, err := http.Get(tuLingURL)
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf(err.Error())
 	}
 	defer resp.Body.Close()
 	reply := new(tlReply)
@@ -40,7 +40,7 @@ func qinAI(info string) string {
 	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", info)
 	resp, err := http.Get(qinURL)
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf(err.Error())
 	}
 	defer resp.Body.Close()
 	reply := new(qinReply)
@@ -60,7 +60,7 @@ func mitAI(info string) string {
 	mitURL := "http://fiddle.pandorabots.com/pandora/talk?botid=9fa364f2fe345a10&skin=demochat"
 	resp, err := http.PostForm(mitURL, url.Values{"message": {info}, "botcust2": {"d064e07d6e067535"}})
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf(err.Error())
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

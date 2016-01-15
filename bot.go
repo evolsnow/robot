@@ -67,7 +67,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			err := fmt.Errorf("internal error: %v", p)
-			log.Println(err)
+			log.Printf(err)
 		}
 	}()
 	user := update.Message.Chat.UserName
@@ -84,7 +84,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	} else if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint = received[0]
-		log.Println(endPoint)
+		log.Printf(endPoint)
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
@@ -112,7 +112,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
-	log.Println(rawMsg)
+	log.Printf(rawMsg)
 	_, err := rb.bot.Send(msg)
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
@@ -153,7 +153,7 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 	close(saidGoodBye)
 	cmd := exec.Command("bash", "/root/evolve_"+rb.nickName)
 	if err := cmd.Start(); err != nil {
-		log.Println(err.Error())
+		log.Printf(err.Error())
 	}
 }
 
@@ -189,7 +189,7 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 	if rb.shutUp {
 		return ""
 	}
-	log.Println(info)
+	log.Printf(info)
 	//	var response string
 	for _, r := range info {
 		if unicode.Is(unicode.Scripts["Han"], r) {

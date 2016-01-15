@@ -51,14 +51,14 @@ func socketHandler(ws *websocket.Conn) {
 			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 		}
 		if err := websocket.Message.Receive(ws, &in); err != nil {
-			log.Println(err)
+			log.Printf(err)
 			return
 		}
 		fmt.Printf("Received: %s\n", in)
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
-				log.Println(in)
+				log.Printf(in)
 				zh = true
 				break
 			}
