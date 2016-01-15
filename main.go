@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
@@ -14,7 +15,9 @@ import (
 )
 
 func main() {
-	config, err := ParseConfig("config_jarvis.json")
+	var configFile string
+	flag.StringVar(&configFile, "c", "config.json", "specify config file")
+	config, err := ParseConfig(configFile)
 	if err != nil {
 		log.Fatal("a vailid json config file must exist")
 	}
