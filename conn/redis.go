@@ -25,3 +25,11 @@ func SetUserChatId(user string, id int) {
 	key := user + "ChatId"
 	c.Do("SET", key, id)
 }
+
+func GetUserChatId(user string) int {
+	c := Pool.Get()
+	defer c.Close()
+	key := user + "ChatId"
+	id, _ := redis.Int(c.Do("GET", key))
+	return id
+}

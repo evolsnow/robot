@@ -35,10 +35,10 @@ type Action struct {
 }
 
 type Task struct {
-	ChatId int
-	Owner  string
-	Desc   string
-	When   time.Time
+	ChatId   int
+	Owner    string
+	Desc     string
+	Duration time.Duration
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
@@ -100,7 +100,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.Help(update)
 		case "/trans":
 			rawMsg = rb.Translate(update)
-		case "/todo":
+		case "/alarm":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "setReminder"
 			userAction[user] = tmpAction
@@ -138,7 +138,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
-	go conn.SetUserChatId(user, update.Message.Chat.ID)
+	go conn.SetUserChatId(user+":"+rb.nickName, update.Message.Chat.ID)
 	return "welcome: " + user
 }
 
@@ -224,7 +224,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
-		return "do what"
+		return "Ok, what should I reminde you to do?"
 	case 1:
 		//save thing
 		tmpTask := userTask[user]
@@ -234,15 +234,55 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
-		return "when"
+		return "When or how much time after?\n" +
+			"You can type '2/14 11:30' means 11:30 at 2/14 \n" + //first format
+			"Or type '11:30' means at 11:30 today" + //second format
+			"Or type '5m10s' means 5 minutes 10 seconds later" //third format
 	case 2:
-		//save time
-		//		userTask[user].When = update.Message.Text
-		//go func(){}()
-		log.Println(userTask[user].Desc)
-		log.Println(userTask[user].When)
+		//save time duration
+		text := update.Message.Text
+		firstFormat := "1/02 15:04"
+		secondFormat := "15:04"
+		var scheduledTime time.Time
+		var nowTime = time.Now()
+		var du time.Duration
+		var err error
+		if strings.Contains(text, ":") {
+			scheduledTime, err = time.Parse(firstFormat, text)
+			nowTime, _ = time.Parse(firstFormat, nowTime.Format(firstFormat))
+			if err != nil { //try to parse with first format
+				scheduledTime, err = time.Parse(secondFormat, text)
+				nowTime, _ = time.Parse(secondFormat, nowTime.Format(secondFormat))
+				if err != nil {
+					return "wrong format, try '2/14 11:30' or '11:30'?"
+				}
+			}
+			du = scheduledTime.Sub(nowTime)
+		} else {
+
+			du, err = time.ParseDuration(text)
+			if err != nil {
+				return "wrong format, try '1h2m3s'?"
+			}
+		}
+		tmpTask := userTask[user]
+		tmpTask.Duration = du
+		userTask[user] = tmpTask
+		go func(rb *Robot, ts Task) {
+			timer := time.NewTimer(du)
+			<-timer.C
+			rawMsg := fmt.Sprintf("Hi: %s.\nMaybe it's time to:\n%s", ts.Owner, ts.Desc)
+			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
+			msg.ParseMode = "markdown"
+			_, err := rb.bot.Send(msg)
+			if err != nil {
+				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner+":"+rb.nickName), rawMsg))
+			}
+
+		}(rb, userTask[user])
 
 		delete(userAction, user)
+		delete(userTask, user)
 		return "ok"
 	}
 	return ""
