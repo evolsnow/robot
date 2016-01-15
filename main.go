@@ -16,7 +16,10 @@ import (
 
 func main() {
 	var configFile string
+	var debug bool
 	flag.StringVar(&configFile, "c", "config.json", "specify config file")
+	flag.BoolVar(&debug, "v", false, "debug mode")
+
 	flag.Parse()
 	config, err := ParseConfig(configFile)
 	if err != nil {
@@ -30,6 +33,7 @@ func main() {
 	}
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
 	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
+	robot.bot.Debug = debug
 	go robot.run()
 	srvPort := strconv.Itoa(config.Port)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
