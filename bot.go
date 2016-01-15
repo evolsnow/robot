@@ -12,10 +12,13 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 )
 
 var saidGoodBye = make(chan int, 1)
+var userAction = make(map[string]Action) //map[user]Action
+var userTask = make(map[string]Task)
 
 type Robot struct {
 	bot     *tgbotapi.BotAPI
@@ -26,17 +29,16 @@ type Robot struct {
 	nickName string //user defined name
 }
 
-func (rb *Robot) run() {
-	if rb.nickName == "samaritan" {
-		chatId := conn.GetMasterId()
-		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
-		if _, err := rb.bot.Send(msg); err != nil {
-			log.Println("evolution failed")
-		}
-	}
-	for update := range rb.updates {
-		go handlerUpdate(rb, update)
-	}
+type Action struct {
+	ActionName string
+	ActionStep int
+}
+
+type Task struct {
+	ChatId int
+	Owner  string
+	Desc   string
+	When   time.Time
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
@@ -57,6 +59,19 @@ func newRobot(token, nickName, webHook string) *Robot {
 	return rb
 }
 
+func (rb *Robot) run() {
+	if rb.nickName == "samaritan" {
+		chatId := conn.GetMasterId()
+		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
+		if _, err := rb.bot.Send(msg); err != nil {
+			log.Println("evolution failed")
+		}
+	}
+	for update := range rb.updates {
+		go handlerUpdate(rb, update)
+	}
+}
+
 func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -64,6 +79,15 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			log.Println(err)
 		}
 	}()
+
+	user := update.Message.Chat.UserName
+	if action, ok := userAction[user]; ok { //detect if user is in interaction mode
+		switch action.ActionName {
+		case "setReminder":
+			rb.SetReminder(update, action.ActionStep)
+		}
+	}
+
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
@@ -78,6 +102,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.Help(update)
 		case "/trans":
 			rawMsg = rb.Translate(update)
+		case "/todo":
+			rawMsg = rb.SetReminder(update, 0)
 		case "/evolve":
 			rawMsg = "upgrading..."
 			go conn.SetMasterId(chatId)
@@ -182,6 +208,43 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 		return qinAI(info)
 	}
 	//	return response
+}
+
+func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
+	user := update.Message.Chat.UserName
+	switch step {
+	case 0:
+		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		tmpTask := userTask[user]
+		tmpTask.ChatId = update.Message.Chat.ID
+		tmpTask.Owner = user
+		userTask[user] = tmpTask
+
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		return "do what"
+	case 1:
+		//save thing
+		tmpTask := userTask[user]
+		tmpTask.Desc = update.Message.Text
+		userTask[user] = tmpTask
+
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		return "when"
+	case 2:
+		//save time
+		//		userTask[user].When = update.Message.Text
+		//go func(){}()
+		log.Println(userTask[user].Desc)
+		log.Println(userTask[user].When)
+
+		delete(userAction, user)
+		return "ok"
+	}
+	return ""
 }
 
 func tlAI(info string) string {
