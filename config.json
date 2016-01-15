@@ -1,0 +1,19 @@
+{
+  "server": "127.0.0.1",
+  "port": 8080,
+  "webhook_address": "https://www.samaritan.tech:8443/",
+  "redis_address": "127.0.0.1",
+  "redis_port": 6379,
+  "redis_db": 2,
+  "redis_password": null,
+  "robots": [
+    {
+      "name": "samaritan",
+      "token": "164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho"
+    },
+    {
+      "name": "jarvis",
+      "token": "176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8"
+    }
+  ]
+}

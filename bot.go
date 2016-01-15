@@ -17,7 +17,7 @@ import (
 
 var saidGoodBye = make(chan int, 1)
 
-type robot struct {
+type Robot struct {
 	bot     *tgbotapi.BotAPI
 	updates <-chan tgbotapi.Update
 	shutUp  bool
@@ -26,7 +26,7 @@ type robot struct {
 	nickName string //user defined name
 }
 
-func (rb *robot) run() {
+func (rb *Robot) run() {
 	if rb.nickName == "samaritan" {
 		chatId := conn.GetMasterId()
 		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
@@ -39,8 +39,8 @@ func (rb *robot) run() {
 	}
 }
 
-func newRobot(token, nickName string) *robot {
-	var rb = new(robot)
+func newRobot(token, nickName, webHook string) *Robot {
+	var rb = new(Robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
@@ -49,7 +49,7 @@ func newRobot(token, nickName string) *robot {
 	rb.name = rb.bot.Self.UserName
 	rb.nickName = nickName
 	log.Printf("%s: Authorized on account %s", rb.nickName, rb.name)
-	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook("https://www.samaritan.tech:8443/" + rb.bot.Token))
+	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook(webHook + rb.bot.Token))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func newRobot(token, nickName string) *robot {
 	return rb
 }
 
-func handlerUpdate(rb *robot, update tgbotapi.Update) {
+func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			err := fmt.Errorf("internal error: %v", p)
@@ -93,6 +93,7 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 	}
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
+	log.Println(rawMsg)
 	_, err := rb.bot.Send(msg)
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
@@ -108,11 +109,13 @@ func handlerUpdate(rb *robot, update tgbotapi.Update) {
 //	return strings.SplitAfterN(text, " ", 2)[1]
 //}
 
-func (rb *robot) Start(update tgbotapi.Update) string {
-	return "welcome: " + update.Message.Chat.UserName
+func (rb *Robot) Start(update tgbotapi.Update) string {
+	user := update.Message.Chat.UserName
+	go conn.SetUserChatId(user, update.Message.Chat.ID)
+	return "welcome: " + user
 }
 
-func (rb *robot) Help(update tgbotapi.Update) string {
+func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /trans - translate words between english and chinese
 /evolve	- self evolution of samaritan
@@ -121,13 +124,12 @@ func (rb *robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
-func (rb *robot) Evolve(update tgbotapi.Update) {
+func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
 		rb.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "sorry, unauthorized"))
 		return
 	}
-	select {
-	case <-saidGoodBye:
+	if <-saidGoodBye {
 		close(saidGoodBye)
 		cmd := exec.Command("bash", "/root/evolve")
 		if err := cmd.Start(); err != nil {
@@ -136,7 +138,7 @@ func (rb *robot) Evolve(update tgbotapi.Update) {
 	}
 }
 
-func (rb *robot) Translate(update tgbotapi.Update) string {
+func (rb *Robot) Translate(update tgbotapi.Update) string {
 	raw := strings.SplitAfterN(update.Message.Text, " ", 2)
 	info := ""
 	if len(raw) < 2 {
@@ -148,7 +150,7 @@ func (rb *robot) Translate(update tgbotapi.Update) string {
 	return qinAI(info)
 
 }
-func (rb *robot) Talk(update tgbotapi.Update) string {
+func (rb *Robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	chinese := false
 	if strings.Contains(info, rb.name) {

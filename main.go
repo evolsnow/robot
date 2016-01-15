@@ -5,23 +5,37 @@ import (
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
 	"log"
+	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
 
 func main() {
-	conn.Pool = conn.NewPool("127.0.0.1:6379", "", 1)
-	if !conn.Ping("127.0.0.1:6379", "") {
-		log.Fatal("connect to redis server failed")
+	config, err := ParseConfig("config.json")
+	if err != nil {
+		log.Fatal("a vailid json config file must exist")
 	}
 
-	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan")
-	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
-	//	samaritan.bot.Debug = true
-	go samaritan.run()
-	go jarvis.run()
+	redisPort := strconv.Itoa(config.RedisPort)
+	redisServer := net.JoinHostPort(config.RedisAddress, redisPort)
+	if !conn.Ping(redisServer, config.RedisPassword) {
+		log.Fatal("connect to redis server failed")
+	}
+	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
+
+	for i := range config.Robots {
+		robot := newRobot(config.Robots[i].Token, config.Robots[i].Name, config.WebHookAddress)
+		go robot.run()
+	}
+
+	//	samaritan := newRobot("164760320:AAEE0sKLgCwHGYJ0Iqz7o-GYH4jVTQZAZho", "samaritan", config.WebHookAddress)
+	//	jarvis := newRobot("176820788:AAH26vgFIk7oWKibd7P8XHHZX2t2_2Jvke8", "jarvis")
+	//	//	samaritan.bot.Debug = true
+	//	go samaritan.run()
+	//	go jarvis.run()
 
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
@@ -44,7 +58,6 @@ func socketHandler(ws *websocket.Conn) {
 		zh := false
 		for _, r := range in {
 			if unicode.Is(unicode.Scripts["Han"], r) {
-				in = strings.Replace(in, " ", "", -1)
 				log.Println(in)
 				zh = true
 				break

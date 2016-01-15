@@ -7,7 +7,7 @@ import (
 
 var Pool *redis.Pool
 
-var CachePool *redis.Pool
+//var CachePool *redis.Pool
 
 func NewPool(server, password string, db int) *redis.Pool {
 	return &redis.Pool{

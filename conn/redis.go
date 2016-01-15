@@ -18,3 +18,10 @@ func GetMasterId() int {
 	id, _ := redis.Int(c.Do("GET", "evolsnowChatId"))
 	return id
 }
+
+func SetUserChatId(user string, id int) {
+	c := Pool.Get()
+	defer c.Close()
+	key := user + "ChatId"
+	c.Do("SET", key, id)
+}
