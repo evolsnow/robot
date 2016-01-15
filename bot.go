@@ -67,7 +67,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			err := fmt.Errorf("internal error: %v", p)
-			log.Printf(err)
+			log.Println(err)
 		}
 	}()
 	user := update.Message.Chat.UserName

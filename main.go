@@ -51,7 +51,7 @@ func socketHandler(ws *websocket.Conn) {
 			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 		}
 		if err := websocket.Message.Receive(ws, &in); err != nil {
-			log.Printf(err)
+			log.Println(err)
 			return
 		}
 		fmt.Printf("Received: %s\n", in)
