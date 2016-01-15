@@ -72,6 +72,6 @@ func socketHandler(ws *websocket.Conn) {
 			websocket.Message.Send(ws, ret[i])
 			time.Sleep(time.Second)
 		}
-		websocket.Message.Send(ws, " ")
+		websocket.Message.Send(ws, "")
 	}
 }
