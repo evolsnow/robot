@@ -193,11 +193,13 @@ func tlAI(info string) string {
 		log.Println(err.Error())
 	}
 	defer resp.Body.Close()
+	test := resp.Body
+	body, err := ioutil.ReadAll(test)
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	log.Printf("reply from tuling machine: %s", reply.Text+reply.Url)
-	return strings.Replace(reply.Text+reply.Url, "<br>", "\n", -1)
+	log.Printf("reply from tuling machine: %s", string(body))
+	return reply.Text + "\n" + reply.Url
 }
 
 type tlReply struct {
