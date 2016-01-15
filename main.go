@@ -31,8 +31,9 @@ func main() {
 	srvPort := strconv.Itoa(config.Port)
 
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
-	webHookServer := net.JoinHostPort(config.WebHookUrl, srvPort)
-	robot := newRobot(config.RobotToken, config.RobotName, webHookServer)
+	//	webHookServer := net.JoinHostPort(config.WebHookUrl, srvPort)
+	//	log.Println(webHookServer)
+	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
 	go robot.run()
 
 	http.Handle("/websocket", websocket.Handler(socketHandler))
