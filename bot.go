@@ -81,17 +81,15 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}()
 
 	user := update.Message.Chat.UserName
-	if action, ok := userAction[user]; ok { //detect if user is in interaction mode
-		switch action.ActionName {
-		case "setReminder":
-			rb.SetReminder(update, action.ActionStep)
-		}
-	}
-
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
-	if string(text[0]) == "/" {
+	if action, ok := userAction[user]; ok { //detect if user is in interaction mode
+		switch action.ActionName {
+		case "setReminder":
+			rawMsg = rb.SetReminder(update, action.ActionStep)
+		}
+	} else if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint = received[0]
 		log.Println(endPoint)
