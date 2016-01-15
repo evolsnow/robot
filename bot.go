@@ -89,6 +89,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		}
+	} else if string([]rune(text)[:2]) == "翻译" {
+		rb.Translate(update)
 	} else if string(text[0]) == "/" {
 		received := strings.Split(text, " ")
 		endPoint = received[0]
@@ -166,13 +168,18 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 }
 
 func (rb *Robot) Translate(update tgbotapi.Update) string {
-	raw := strings.SplitAfterN(update.Message.Text, " ", 2)
-	info := ""
-	if len(raw) < 2 {
-		return "what do you want to translate, try '/trans cat'?"
+	var info string
+	if update.Message.Text[0] == "/" {
+		raw := strings.SplitAfterN(update.Message.Text, " ", 2)
+		if len(raw) < 2 {
+			return "what do you want to translate, try '/trans cat'?"
+		} else {
+			info = "翻译" + raw[1]
+		}
 	} else {
-		info = "翻译" + raw[1]
+		info = update.Message.Text
 	}
+
 	return qinAI(info)
 
 }
