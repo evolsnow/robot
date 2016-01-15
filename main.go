@@ -18,7 +18,7 @@ func main() {
 	var configFile string
 	var debug bool
 	flag.StringVar(&configFile, "c", "config.json", "specify config file")
-	flag.BoolVar((*bool)&debug, "d", false, "debug mode")
+	flag.BoolVar(&debug, "d", false, "debug mode")
 
 	flag.Parse()
 	config, err := ParseConfig(configFile)
