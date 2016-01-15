@@ -271,13 +271,14 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		userTask[user] = tmpTask
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
-			<-timer.C
-			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
+			owner := ts.Owner
+			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", owner, ts.Desc)
 			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 			msg.ParseMode = "markdown"
+			<-timer.C
 			_, err := rb.bot.Send(msg)
 			if err != nil {
-				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
+				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(owner), rawMsg))
 			}
 			delete(userTask, user)
 		}(rb, userTask[user])
