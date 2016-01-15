@@ -138,7 +138,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
 /trans - translate words between english and chinese
-/evolve	- self evolution of samaritan
+/evolve	- self evolution of me
 /help - show this help message
 `
 	return helpMsg
@@ -151,7 +151,7 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 	}
 	<-saidGoodBye
 	close(saidGoodBye)
-	cmd := exec.Command("bash", "/root/evolve")
+	cmd := exec.Command("bash", "/root/evolve_"+rb.nickName)
 	if err := cmd.Start(); err != nil {
 		log.Println(err.Error())
 	}
