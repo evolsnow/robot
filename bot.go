@@ -129,12 +129,11 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 		rb.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "sorry, unauthorized"))
 		return
 	}
-	if <-saidGoodBye {
-		close(saidGoodBye)
-		cmd := exec.Command("bash", "/root/evolve")
-		if err := cmd.Start(); err != nil {
-			log.Println(err.Error())
-		}
+	<-saidGoodBye
+	close(saidGoodBye)
+	cmd := exec.Command("bash", "/root/evolve")
+	if err := cmd.Start(); err != nil {
+		log.Println(err.Error())
 	}
 }
 
