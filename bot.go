@@ -40,7 +40,6 @@ func (rb *Robot) run() {
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
-	log.Println(token)
 	var rb = new(Robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
@@ -197,6 +196,7 @@ func tlAI(info string) string {
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
+	log.Printf("reply from tuling machine: %s", reply.Text+reply.Url)
 	return strings.Replace(reply.Text+reply.Url, "<br>", "\n", -1)
 }
 
@@ -239,6 +239,7 @@ func qinAI(info string) string {
 	reply := new(qinReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
+	log.Printf("reply from qingyunke machine: %s", reply.Content)
 	ret := strings.Replace(reply.Content, "{br}", "\n", -1)
 	return strings.Replace(ret, "菲菲", "Jarvis", -1)
 }
@@ -262,7 +263,7 @@ func mitAI(info string) string {
 		return "change another question?"
 	}
 	found := (string(all[0]))
-	log.Println(found)
+	log.Printf("reply from mitsuku machine: %s", found)
 	ret := strings.Replace(found, `<P ALIGN="CENTER"><img src="http://`, "", -1)
 	ret = strings.Replace(ret, `"></img></P>`, "", -1)
 	ret = strings.Replace(ret[13:], "<br>", "\n", -1)
