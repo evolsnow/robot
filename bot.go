@@ -219,7 +219,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
 		tmpTask := userTask[user]
 		tmpTask.ChatId = update.Message.Chat.ID
-		tmpTask.Owner = user
+		tmpTask.Owner = update.Message.Chat.UserName
 		userTask[user] = tmpTask
 
 		tmpAction := userAction[user]
@@ -236,9 +236,9 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
 		return "When or how much time after?\n" +
-			"You can type *2/14 11:30* means 11:30 at 2/14 \n" + //first format
-			"Or type *11:30* means at 11:30 today" + //second format
-			"Or type *5m10s* means 5 minutes 10 seconds later" //third format
+			"You can type '*2/14 11:30*' means 11:30 at 2/14 \n" + //first format
+			"Or type '*11:30*' means at 11:30 today\n" + //second format
+			"Or type '*5m10s*' means 5 minutes 10 seconds later" //third format
 	case 2:
 		//save time duration
 		text := update.Message.Text
@@ -272,7 +272,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
 			<-timer.C
-			rawMsg := fmt.Sprintf("Hi %s.\nMaybe it's time to:\n*%s*", ts.Owner, ts.Desc)
+			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 			msg.ParseMode = "markdown"
 			_, err := rb.bot.Send(msg)
@@ -284,7 +284,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 
 		delete(userAction, user)
 		delete(userTask, user)
-		return "Ok, I will remind that for you later"
+		return fmt.Sprintf("Ok, I will remind you to %s later", userTask[user].Desc)
 	}
 	return ""
 }
