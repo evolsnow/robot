@@ -31,7 +31,7 @@ func (rb *Robot) run() {
 		chatId := conn.GetMasterId()
 		msg := tgbotapi.NewMessage(chatId, "samaritan is coming back!")
 		if _, err := rb.bot.Send(msg); err != nil {
-			log.Fatal("evolution failed")
+			log.Println("evolution failed")
 		}
 	}
 	for update := range rb.updates {
@@ -40,6 +40,7 @@ func (rb *Robot) run() {
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
+	log.Println("make new robot")
 	var rb = new(Robot)
 	var err error
 	rb.bot, err = tgbotapi.NewBotAPI(token)
