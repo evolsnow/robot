@@ -5,6 +5,7 @@ import (
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -82,6 +83,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	} else if string([]rune(text)[:2]) == "翻译" {
 		rawMsg = rb.Translate(update)
 	} else if string(text[0]) == "/" {
+		text = strings.Replace(text, "@"+rb.name, "", 1)
 		received := strings.Split(text, " ")
 		endPoint = received[0]
 		log.Printf(endPoint)
@@ -152,9 +154,8 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 	<-saidGoodBye
 	close(saidGoodBye)
 	cmd := exec.Command("bash", "/root/evolve_"+rb.nickName)
-	if err := cmd.Start(); err != nil {
-		log.Printf(err.Error())
-	}
+	cmd.Start()
+	os.Exit(1)
 }
 
 func (rb *Robot) Translate(update tgbotapi.Update) string {

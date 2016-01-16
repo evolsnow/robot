@@ -49,33 +49,14 @@ func main() {
 //used for web samaritan robot
 func socketHandler(ws *websocket.Conn) {
 	for {
-		var in, response string
+		var in string
 		var ret []string
-		sf := func(c rune) bool {
-			return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
-		}
 		if err := websocket.Message.Receive(ws, &in); err != nil {
 			log.Println(err)
 			return
 		}
-		fmt.Printf("Received: %s\n", in)
-		zh := false
-		for _, r := range in {
-			if unicode.Is(unicode.Scripts["Han"], r) {
-				log.Printf(in)
-				zh = true
-				break
-			}
-		}
-		if zh {
-			response = tlAI(in)
-			// Separate into fields with func.
-			ret = strings.FieldsFunc(response, sf)
+		ret = receive(in)
 
-		} else {
-			response = mitAI(in)
-			ret = strings.FieldsFunc(response, sf)
-		}
 		for i := range ret {
 			websocket.Message.Send(ws, ret[i])
 			time.Sleep(time.Second)
@@ -87,6 +68,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 
 	if r.Method == "GET" {
+		log.Printf("new conn")
 		io.WriteString(w, <-messages)
 
 	} else {
@@ -96,8 +78,9 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 				ret := receive(body)
 				for i := range ret {
 					messages <- ret[i]
+					time.Sleep(time.Second)
 				}
-
+				messages <- ""
 			}(body)
 		}
 	}
