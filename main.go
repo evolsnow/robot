@@ -82,11 +82,12 @@ func socketHandler(ws *websocket.Conn) {
 	}
 }
 func ajax(w http.ResponseWriter, r *http.Request) {
-	var messages chan string
+	var messages = make(chan string)
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	go func() {
 		for {
 			time.Sleep(time.Second * 2)
+			log.Println("hi")
 			messages <- "from ajax"
 		}
 	}()
