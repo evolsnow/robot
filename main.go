@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 	"unicode"
 )
 
-var messages = make(chan string)
+var messages = make(chan string, 1)
 
 func main() {
 	var configFile string
@@ -67,9 +68,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 
 	if r.Method == "GET" {
-		log.Printf("new conn")
-		w.Write([]byte(<-messages))
-
+		io.WriteString(w, <-messages)
 	} else {
 		body := r.FormValue("text")
 		if body != "" {
