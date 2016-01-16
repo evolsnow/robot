@@ -15,6 +15,8 @@ import (
 	"unicode"
 )
 
+var messages = make(chan string)
+
 func main() {
 	var configFile string
 	var debug bool
@@ -82,25 +84,26 @@ func socketHandler(ws *websocket.Conn) {
 	}
 }
 func ajax(w http.ResponseWriter, r *http.Request) {
-	var messages = make(chan string)
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	body := r.FormValue("text")
-	if body != "" {
-		go func(string) {
-			ret := receive(body)
-			for i := range ret {
-				messages <- ret[i]
-			}
 
-		}(body)
+	if r.Method == "GET" {
+		io.WriteString(w, <-messages)
+
+	} else {
+		body := r.FormValue("text")
+		if body != "" {
+			go func(string) {
+				ret := receive(body)
+				for i := range ret {
+					messages <- ret[i]
+				}
+
+			}(body)
+		}
 	}
-	io.WriteString(w, <-messages)
 }
 
 func receive(in string) (ret []string) {
-	if in == "" {
-		return
-	}
 	fmt.Printf("Received: %s\n", in)
 	var response string
 	sf := func(c rune) bool {
