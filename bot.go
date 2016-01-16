@@ -288,7 +288,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		}(rb, userTask[user])
 
 		delete(userAction, user)
-		return fmt.Sprintf("Ok, I will remind you that\n*%s*: *%s*", userTask[user].Desc, showTime)
+		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
 }
