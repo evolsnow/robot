@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
-	"io"
 	"log"
 	"net"
 	"net/http"
