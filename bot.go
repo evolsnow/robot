@@ -33,7 +33,7 @@ type Task struct {
 	ChatId int
 	Owner  string
 	Desc   string
-	When   time.Time
+	//	When   time.Time
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
@@ -233,9 +233,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
 		return "When or how much time after?\n" +
-			"You can type '*2/14 11:30*' means 11:30 at 2/14 \n" + //first format
-			"Or type '*11:30*' means at 11:30 today\n" + //second format
-			"Or type '*5m10s*' means 5 minutes 10 seconds later" //third format
+			"You can type:\n" +
+			"'*2/14 11:30*' means 11:30 at 2/14 \n" + //first format
+			"'*11:30*' means  11:30 today\n" + //second format
+			"'*5m10s*' means 5 minutes 10 seconds later" //third format
 	case 2:
 		//save time duration
 		text := update.Message.Text
@@ -259,13 +260,14 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		} else {
 
 			du, err = time.ParseDuration(text)
+			scheduledTime = nowTime.Add(du)
 			if err != nil {
 				return "wrong format, try '1h2m3s'?"
 			}
 		}
-		tmpTask := userTask[user]
-		tmpTask.When = scheduledTime
-		userTask[user] = tmpTask
+		//		tmpTask := userTask[user]
+		//		tmpTask.When = scheduledTime
+		//		userTask[user] = tmpTask
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
 			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
@@ -280,7 +282,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		}(rb, userTask[user])
 
 		delete(userAction, user)
-		return fmt.Sprintf("Ok, I will remind you to %s later", userTask[user].Desc)
+		return fmt.Sprintf("Ok, I will remind you to %s at *%s*", userTask[user].Desc, scheduledTime.Format("01/02 15:04:05"))
 	}
 	return ""
 }
