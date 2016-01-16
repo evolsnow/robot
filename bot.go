@@ -240,9 +240,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	case 2:
 		//save time duration
 		text := update.Message.Text
+		text = strings.Replace(text, "：", ":", -1)
 		firstFormat := "1/02 15:04"
 		secondFormat := "15:04"
-		thirdFormat := "1/02 15:04:05"
+		thirdFormat := "15:04:05"
 		var showTime string
 		var scheduledTime time.Time
 		var nowTime = time.Now()
