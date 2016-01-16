@@ -6,6 +6,7 @@ import (
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -84,12 +85,42 @@ func socketHandler(ws *websocket.Conn) {
 func ajax(w http.ResponseWriter, r *http.Request) {
 	var messages = make(chan string)
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	go func() {
-		for {
-			time.Sleep(time.Second * 2)
-			log.Println("hi")
-			messages <- "from ajax"
+	body, _ := ioutil.ReadAll(r.Body)
+	go func([]byte) {
+		ret := receive(string(body))
+		for i := range ret {
+			messages <- ret[i]
 		}
-	}()
+
+	}(body)
 	io.WriteString(w, <-messages)
+}
+
+func receive(in string) (ret []string) {
+	if in == "" {
+		return
+	}
+	fmt.Printf("Received: %s\n", in)
+	var response string
+	sf := func(c rune) bool {
+		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
+	}
+	zh := false
+	for _, r := range in {
+		if unicode.Is(unicode.Scripts["Han"], r) {
+			log.Printf(in)
+			zh = true
+			break
+		}
+	}
+	if zh {
+		response = tlAI(in)
+		// Separate into fields with func.
+		ret = strings.FieldsFunc(response, sf)
+
+	} else {
+		response = mitAI(in)
+		ret = strings.FieldsFunc(response, sf)
+	}
+	return
 }
