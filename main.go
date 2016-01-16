@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -69,7 +68,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		log.Printf("new conn")
-		io.WriteString(w, <-messages)
+		w.Write([]byte(<-messages))
 
 	} else {
 		body := r.FormValue("text")
