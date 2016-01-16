@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -36,6 +37,7 @@ func main() {
 	robot.bot.Debug = debug
 	go robot.run()
 	srvPort := strconv.Itoa(config.Port)
+	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	//	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
@@ -78,4 +80,15 @@ func socketHandler(ws *websocket.Conn) {
 		}
 		websocket.Message.Send(ws, "")
 	}
+}
+func ajax(w http.ResponseWriter, r *http.Request) {
+	var messages chan string
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	go func() {
+		for {
+			time.Sleep(time.Second * 2)
+			messages <- "from ajax"
+		}
+	}()
+	io.WriteString(w, <-messages)
 }

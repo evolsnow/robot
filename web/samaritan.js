@@ -79,7 +79,7 @@ var chatWebsocket = function () {
         }
     }
 
-    if (socket) {
+    if (!socket) {
         socket.onmessage = function (event) {
             //$msg.append('<p>' + event.data + '</p>');
             $State.text.addClass('talk');
@@ -103,41 +103,41 @@ var chatWebsocket = function () {
             return false;
         });
     } else {
-//        var error_sleep_time = 500;
-//
-//        function poll() {
-//            $.ajax({
-//                url: 'https://samaritan.tech:8001/ajax',
-//                type: 'GET',
-//                success: function (event) {
-//                    //$msg.append('<p>' + event + '</p>');
-//                    $State.text.addClass('talk');
-//                    //var hrWidth;
-//                    document.getElementById("msg").innerHTML = event;
-//                    console.log(event);
-//                    error_sleep_time = 500;
-//                    poll();
-//                },
-//                error: function () {
-//                    error_sleep_time *= 2;
-//                    setTimeout(poll, error_sleep_time);
-//                }
-//            });
-//        }
-//
-//        poll();
-//
-//        $('form').submit(function () {
-//            $.ajax({
-//                url: 'https://samaritan.tech:8001/ajax',
-//                type: 'POST',
-//                data: {text: $text.val()},
-//                success: function () {
-//                    $text.val('').select();
-//                }
-//            });
-//            return false;
-//        });
+        var error_sleep_time = 500;
+
+        function poll() {
+            $.ajax({
+                url: 'https://samaritan.tech:8443/ajax',
+                type: 'GET',
+                success: function (event) {
+                    //$msg.append('<p>' + event + '</p>');
+                    $State.text.addClass('talk');
+                    //var hrWidth;
+                    document.getElementById("msg").innerHTML = event;
+                    console.log(event);
+                    error_sleep_time = 500;
+                    poll();
+                },
+                error: function () {
+                    error_sleep_time *= 2;
+                    setTimeout(poll, error_sleep_time);
+                }
+            });
+        }
+
+        poll();
+
+        $('form').submit(function () {
+            $.ajax({
+                url: 'https://samaritan.tech:8443/ajax',
+                type: 'POST',
+                data: {text: $text.val()},
+                success: function () {
+                    $text.val('').select();
+                }
+            });
+            return false;
+        });
     }
 };
 
