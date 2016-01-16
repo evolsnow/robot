@@ -68,9 +68,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		log.Printf("new conn")
-		for {
-			w.Write([]byte(<-messages))
-		}
+		w.Write([]byte(<-messages))
 
 	} else {
 		body := r.FormValue("text")
