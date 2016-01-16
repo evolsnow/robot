@@ -242,6 +242,8 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		text := update.Message.Text
 		firstFormat := "1/02 15:04"
 		secondFormat := "15:04"
+		thirdFormat := "1/02 15:04:05"
+		var showTime string
 		var scheduledTime time.Time
 		var nowTime = time.Now()
 		var du time.Duration
@@ -249,9 +251,11 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		if strings.Contains(text, ":") {
 			scheduledTime, err = time.Parse(firstFormat, text)
 			nowTime, _ = time.Parse(firstFormat, nowTime.Format(firstFormat))
+			showTime = scheduledTime.Format(firstFormat)
 			if err != nil { //try to parse with first format
 				scheduledTime, err = time.Parse(secondFormat, text)
 				nowTime, _ = time.Parse(secondFormat, nowTime.Format(secondFormat))
+				showTime = scheduledTime.Format(secondFormat)
 				if err != nil {
 					return "wrong format, try '2/14 11:30' or '11:30'?"
 				}
@@ -261,6 +265,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 
 			du, err = time.ParseDuration(text)
 			scheduledTime = nowTime.Add(du)
+			showTime = scheduledTime.Format(thirdFormat)
 			if err != nil {
 				return "wrong format, try '1h2m3s'?"
 			}
@@ -282,7 +287,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		}(rb, userTask[user])
 
 		delete(userAction, user)
-		return fmt.Sprintf("Ok, I will remind you to %s at *%s*", userTask[user].Desc, scheduledTime.Format("01/02 15:04:05"))
+		return fmt.Sprintf("Ok, I will remind you that\n*%s*: *%s*", userTask[user].Desc, showTime)
 	}
 	return ""
 }
