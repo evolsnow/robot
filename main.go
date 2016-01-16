@@ -60,7 +60,7 @@ func socketHandler(ws *websocket.Conn) {
 			websocket.Message.Send(ws, ret[i])
 			time.Sleep(time.Second)
 		}
-		websocket.Message.Send(ws, "")
+		//		websocket.Message.Send(ws, "")
 	}
 }
 func ajax(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +76,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 					messages <- ret[i]
 					time.Sleep(time.Second)
 				}
-				messages <- ""
+				//				messages <- ""
 			}(body)
 		}
 	}

@@ -78,7 +78,7 @@ var chatWebsocket = function() {
 		} catch(e) {}
 	}
 
-	if (!socket) {
+	if (socket) {
 		socket.onmessage = function(event) {
 			//$msg.append('<p>' + event.data + '</p>');
 			$State.text.addClass('talk');
