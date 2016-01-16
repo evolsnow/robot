@@ -6,7 +6,6 @@ import (
 	"github.com/evolsnow/robot/conn"
 	"golang.org/x/net/websocket"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -85,14 +84,16 @@ func socketHandler(ws *websocket.Conn) {
 func ajax(w http.ResponseWriter, r *http.Request) {
 	var messages = make(chan string)
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	body, _ := ioutil.ReadAll(r.Body)
-	go func([]byte) {
-		ret := receive(string(body))
-		for i := range ret {
-			messages <- ret[i]
-		}
+	body := r.FormValue("text")
+	if body != "" {
+		go func(string) {
+			ret := receive(body)
+			for i := range ret {
+				messages <- ret[i]
+			}
 
-	}(body)
+		}(body)
+	}
 	io.WriteString(w, <-messages)
 }
 
