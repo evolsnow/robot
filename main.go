@@ -15,7 +15,7 @@ import (
 	"unicode"
 )
 
-var messages = make(chan string, 1)
+var messages = make(chan string)
 
 func main() {
 	var configFile string
@@ -65,10 +65,9 @@ func socketHandler(ws *websocket.Conn) {
 	}
 }
 func ajax(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-
+	w.Header().Add("Access-Control-Allow-Origin", "https://samaritan.tech/")
 	if r.Method == "GET" {
-		io.WriteString(w, <-messages)
+		w.Write([]byte(<-messages))
 	} else {
 		body := r.FormValue("text")
 		if body != "" {
