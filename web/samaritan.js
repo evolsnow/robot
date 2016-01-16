@@ -83,7 +83,7 @@ var chatWebsocket = function () {
         socket.onmessage = function (event) {
             //$msg.append('<p>' + event.data + '</p>');
             $State.text.addClass('talk');
-            //var hrWidth;
+            var hrWidth;
             document.getElementById("msg").innerHTML = event.data;
             if ($State.text.textWidth() < 1) {
                 hrWidth = 80;
@@ -112,8 +112,18 @@ var chatWebsocket = function () {
                 success: function (event) {
                     //$msg.append('<p>' + event + '</p>');
                     $State.text.addClass('talk');
-                    //var hrWidth;
+                    var hrWidth;
                     document.getElementById("msg").innerHTML = event;
+                    if ($State.text.textWidth() < 1) {
+                hrWidth = 80;
+            } else {
+                hrWidth = $State.text.textWidth() + 20
+            };
+            $State.line.animate({
+                'width': (hrWidth) + "px"
+            }, {
+                'duration': $State.wordAnim
+            });
                     console.log("connected");
                     error_sleep_time = 500;
                     poll();
