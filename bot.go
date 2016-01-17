@@ -59,7 +59,13 @@ func (rb *Robot) run() {
 		go handlerUpdate(rb, update)
 	}
 }
-
+func (rb *Robot) Reply(update tgbotapi.Update, rawMsg string) (err error) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
+	msg.ParseMode = "markdown"
+	log.Printf(rawMsg)
+	_, err = rb.bot.Send(msg)
+	return
+}
 func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -76,6 +82,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		case "downloadMovie":
+			rb.Reply(update, "Searching")
 			rawMsg = rb.DownloadMovie(update, action.ActionStep)
 		}
 	} else if string([]rune(text)[:2]) == "翻译" {
@@ -115,15 +122,16 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	if rawMsg == "" {
 		return
 	}
-	msg := tgbotapi.NewMessage(chatId, rawMsg)
-	msg.ParseMode = "markdown"
-	log.Printf(rawMsg)
-	_, err := rb.bot.Send(msg)
+
+	//	msg := tgbotapi.NewMessage(chatId, rawMsg)
+	//	msg.ParseMode = "markdown"
+	//	log.Printf(rawMsg)
+	//	_, err := rb.bot.Send(msg)
+
+	if err := rb.Reply(update, rawMsg); err != nil {
+		panic(err)
+	}
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
 	}
-	if err != nil {
-		panic(err)
-	}
-
 }

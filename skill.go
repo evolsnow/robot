@@ -116,6 +116,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			"'*11:30*' means  11:30 today\n" + //second format
 			"'*5m10s*' means 5 minutes 10 seconds later" //third format
 	case 2:
+		defer delete(userAction, user)
 		//save time duration
 		text := update.Message.Text
 		text = strings.Replace(text, "：", ":", -1)
@@ -165,7 +166,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			delete(userTask, user)
 		}(rb, userTask[user])
 
-		delete(userAction, user)
+		//		delete(userAction, user)
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
@@ -181,6 +182,7 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int) (ret string) {
 		userAction[user] = tmpAction
 		ret = "Ok, which movie do you want to download?"
 	case 1:
+		defer delete(userAction, user)
 		movie := update.Message.Text
 		var id string
 		resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
@@ -206,14 +208,13 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int) (ret string) {
 			if len(downloads) == 0 {
 				ret = fmt.Sprintf("no answer for %s", movie)
 			} else {
-				ret = "your download links here:\n\n"
+				ret = "Great, your can download from the following links:\n\n"
 				for i := range downloads {
 					log.Printf("found %s: %s\n", string(downloads[i][2]), string(downloads[i][1]))
-					ret += string(downloads[i][2]) + "\n" + string(downloads[i][2]) + "\n\n"
+					ret += string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
 				}
 			}
 		}
-
 	}
 	return
 }
