@@ -232,7 +232,7 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 			results <- "Results from lbl:\n\n"
 			ret := ""
 			for i := range downloads {
-				ret += string(downloads[i][3]) + "\n" + string(downloads[i][1]) + "\n\n"
+				ret += "[" + string(downloads[i][3]) + "]\n" + string(downloads[i][1]) + "\n\n"
 			}
 			results <- ret
 		}
