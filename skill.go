@@ -31,6 +31,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 /alarm - set a reminder
 /evolve	- self evolution of me
 /movie - find movie download links
+/show - find American show download links
 /trans - translate words between english and chinese
 /help - show this help message
 `
@@ -193,13 +194,34 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 			delete(userAction, user)
 			results <- "done"
 		}()
-		results <- "Searching..."
+		results <- "Searching movie..."
 		movie := update.Message.Text
 		var wg sync.WaitGroup
 		wg.Add(2)
 		go getMovieFromZMZ(movie, results, &wg)
 		go getMovieFromLBL(movie, results, &wg)
 		wg.Wait()
+	}
+	return
+}
+
+func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan string) (ret string) {
+	user := update.Message.Chat.UserName
+	switch step {
+	case 0:
+		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		ret = "Ok, which American show do you want to download?"
+	case 1:
+		defer func() {
+			delete(userAction, user)
+			results <- "done"
+		}()
+		results <- "Searching American show..."
+		movie := update.Message.Text
+		GetShowFromZMZ(movie, results)
 	}
 	return
 }
@@ -240,21 +262,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 
 func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	//find resource id first
-	id := getZMZResourceId(movie)
-	if id == "" {
-		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
-	}
-	resourceURL := "http://www.zimuzu.tv/resource/list/" + id
-	resp, _ := zmzClient.Get(resourceURL)
-	defer resp.Body.Close()
-	//1.name 2.size 3.link
-	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
-	body, _ := ioutil.ReadAll(resp.Body)
-	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
-	body = []byte(strings.Replace(tmp, `<div class="fr">\n`, "", -1))
-	downloads := re.FindAllSubmatch(body, -1)
-	if len(downloads) == 0 {
+	if downloads := getZMZResource(movie); downloads == nil {
 		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
 		return
 	} else {
@@ -268,6 +276,52 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 		results <- ret
 	}
 	return
+}
+
+func GetShowFromZMZ(movie string, results chan string) {
+	if downloads := getZMZResource(movie); downloads == nil {
+		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
+		return
+	} else {
+		results <- "Results from zmz:\n\n"
+		for i := range downloads {
+			name := string(downloads[i][1])
+			size := string(downloads[i][2])
+			link := string(downloads[i][3])
+			results <- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+		}
+	}
+	return
+}
+
+func getZMZResource(name string) [][][]byte {
+	id := getZMZResourceId(name)
+	if id == "" {
+		return nil
+	}
+	resourceURL := "http://www.zimuzu.tv/resource/list/" + id
+	resp, _ := zmzClient.Get(resourceURL)
+	defer resp.Body.Close()
+	//1.name 2.size 3.link
+	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
+	body, _ := ioutil.ReadAll(resp.Body)
+	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
+	body = []byte(strings.Replace(tmp, `<div class="fr">\n`, "", -1))
+	downloads := re.FindAllSubmatch(body, -1)
+	if len(downloads) == 0 {
+		return nil
+	}
+	//else {
+	//		results <- "Results from zmz:\n\n"
+	return downloads
+	//		for i := range downloads {
+	//			name := string(downloads[i][1])
+	//			size := string(downloads[i][2])
+	//			link := string(downloads[i][3])
+	//			results<- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+	//		}
+	//	}
+	//	return
 }
 
 func getZMZResourceId(name string) (id string) {
