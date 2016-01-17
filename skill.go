@@ -24,8 +24,9 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
-/trans - translate words between english and chinese
 /evolve	- self evolution of me
+/movie - find movie download links
+/trans - translate words between english and chinese
 /help - show this help message
 `
 	return helpMsg
@@ -219,10 +220,10 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 		id = string(firstId[1])
 		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
 		defer resp.Body.Close()
-		//		re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
-		re, _ = regexp.Compile("<p><a href=\"(.*?)\"(| target=\"_blank)\">(.*?)</a></p>")
-
-		body, _ = ioutil.ReadAll(resp.Body)
+		re, _ = regexp.Compile(`<p><a href="(.*?)"( target="_blank">|>)(.*?)</a></p>`)
+		body, _ := ioutil.ReadAll(resp.Body)
+		//go does not support (?!)
+		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
 			results <- fmt.Sprintf("no answer for *%s* from lbl", movie)
@@ -231,7 +232,7 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 			results <- "Results from lbl:\n\n"
 			ret := ""
 			for i := range downloads {
-				ret += string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
+				ret += string(downloads[i][3]) + "\n" + string(downloads[i][1]) + "\n\n"
 			}
 			results <- ret
 		}
