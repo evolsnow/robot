@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 )
 
 var messages = make(chan string)
@@ -88,15 +87,8 @@ func receive(in string) (ret []string) {
 	sf := func(c rune) bool {
 		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 	}
-	zh := false
-	for _, r := range in {
-		if unicode.Is(unicode.Scripts["Han"], r) {
-			log.Printf(in)
-			zh = true
-			break
-		}
-	}
-	if zh {
+
+	if chinese(in) {
 		response = tlAI(in)
 		// Separate into fields with func.
 		ret = strings.FieldsFunc(response, sf)

@@ -65,16 +65,17 @@ func mitAI(info string) string {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	re, _ := regexp.Compile("Mitsuku:</B>(.*?)<br> <br>")
-	all := re.FindAll(body, -1)
+	all := re.FindSubmatch(body)
 	if len(all) == 0 {
 		return "change another question?"
 	}
-	found := (string(all[0]))
+	found := (string(all[1]))
 	log.Printf("reply from mitsuku machine: %s", found)
 	ret := strings.Replace(found, `<P ALIGN="CENTER"><img src="http://`, "", -1)
 	ret = strings.Replace(ret, `"></img></P>`, "", -1)
-	ret = strings.Replace(ret[13:], "<br>", "\n", -1)
+	ret = strings.Replace(ret, "<br>", "\n", -1)
 	ret = strings.Replace(ret, "xloadswf2.", "", -1)
 	ret = strings.Replace(ret, "Mitsuku", "samaritan", -1)
+	ret = strings.TrimLeft(ret, " ")
 	return ret
 }
