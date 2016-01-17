@@ -306,7 +306,7 @@ func getZMZResource(name string) [][][]byte {
 	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
 	body, _ := ioutil.ReadAll(resp.Body)
 	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
-	body = []byte(strings.Replace(tmp, `<div class="fr">\n`, "", -1))
+	body = []byte(strings.Replace(tmp, "<div class=\"fr\">\n", "", -1))
 	downloads := re.FindAllSubmatch(body, -1)
 	if len(downloads) == 0 {
 		return nil
