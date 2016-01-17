@@ -55,6 +55,7 @@ func (rb *Robot) run() {
 	chatId := conn.GetMasterId()
 	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
 	rb.bot.Send(msg)
+	go loginZMZ()
 	for update := range rb.updates {
 		go handlerUpdate(rb, update)
 	}

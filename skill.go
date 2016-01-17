@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -14,6 +16,9 @@ import (
 	"sync"
 	"time"
 )
+
+//zmz.tv needs to login before downloading
+var zmzClient http.Client
 
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
@@ -192,19 +197,14 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 		movie := update.Message.Text
 		var wg sync.WaitGroup
 		wg.Add(2)
-		go getMovieFromZmz(movie, results, &wg)
-		go getMovieFromLbl(movie, results, &wg)
+		go getMovieFromZMZ(movie, results, &wg)
+		go getMovieFromLBL(movie, results, &wg)
 		wg.Wait()
 	}
 	return
 }
 
-func getMovieFromZmz(movie string, results chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	return
-}
-
-func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
+func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var id string
 	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
@@ -214,7 +214,7 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 	//find first match case
 	firstId := re.FindSubmatch(body)
 	if len(firstId) == 0 {
-		results <- fmt.Sprintf("no answer for *%s* from lbl", movie)
+		results <- fmt.Sprintf("no result for *%s* from lbl", movie)
 		return
 	} else {
 		id = string(firstId[1])
@@ -226,15 +226,71 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
-			results <- fmt.Sprintf("no answer for *%s* from lbl", movie)
+			results <- fmt.Sprintf("no result for *%s* from lbl", movie)
 			return
 		} else {
-			results <- "Results from lbl:\n\n"
-			ret := ""
+			ret := "Results from lbl:\n\n"
 			for i := range downloads {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
 			}
 			results <- ret
 		}
 	}
+}
+
+func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	//find resource id first
+	id := getZMZResourceId(movie)
+	if id == "" {
+		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
+	}
+	resourceURL := "http://www.zimuzu.tv/resource/list/" + id
+	resp, _ := zmzClient.Get(resourceURL)
+	defer resp.Body.Close()
+	//1.name 2.size 3.link
+	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
+	body, _ := ioutil.ReadAll(resp.Body)
+	body = []byte(strings.Replace(string(body), "\n", "", -1))
+	downloads := re.FindAllSubmatch(body, -1)
+	if len(downloads) == 0 {
+		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
+		return
+	} else {
+		ret := "Results from zmz:\n\n"
+		for i := range downloads {
+			name := string(downloads[i][1])
+			size := string(downloads[i][2])
+			link := string(downloads[i][3])
+			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+		}
+		results <- ret
+	}
+	return
+}
+
+func getZMZResourceId(name string) (id string) {
+	queryURL := fmt.Sprintf("http://www.zimuzu.tv/search?keyword=%s&type=resource", name)
+	re, _ := regexp.Compile(`<div class="t f14"><a href="/resource/(.*?)"><strong class="list_title">`)
+	resp, _ := zmzClient.Get(queryURL)
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	//find first match case
+	firstId := re.FindSubmatch(body)
+	if len(firstId) == 0 {
+		return
+	} else {
+		log.Println(id)
+		id = string(firstId[1])
+		return
+	}
+}
+
+func loginZMZ() {
+	gCookieJar, _ := cookiejar.New(nil)
+	zmzURL := "http://www.zimuzu.tv/User/Login/ajaxLogin"
+	zmzClient = http.Client{
+		Jar: gCookieJar,
+	}
+	zmzClient.PostForm(zmzURL, url.Values{"account": {"evol4snow"}, "password": {"104545"}, "remember": {"0"}})
 }
