@@ -262,6 +262,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 
 func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
+	loginZMZ()
 	if downloads := getZMZResource(movie); downloads == nil {
 		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
 		return
@@ -279,7 +280,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 }
 
 func GetShowFromZMZ(show, s, e string, results chan string) {
-	log.Println(show, s, e)
+	loginZMZ()
 	downloads := getZMZResource(show)
 	if downloads == nil {
 		results <- fmt.Sprintf("no result for *%s* from zmz", show)
