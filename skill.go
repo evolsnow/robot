@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -186,14 +187,18 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 			delete(userAction, user)
 			results <- "done"
 		}()
-		go func() { results <- "Searching..." }()
+		results <- "Searching..."
 		movie := update.Message.Text
-		go getMovieFromLbl(movie, results)
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go getMovieFromLbl(movie, results, &wg)
+		wg.Wait()
 	}
 	return
 }
 
-func getMovieFromLbl(movie string, results chan string) {
+func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	var id string
 	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
 	defer resp.Body.Close()
@@ -211,7 +216,7 @@ func getMovieFromLbl(movie string, results chan string) {
 		return
 	} else {
 		id = string(firstId[1])
-		fmt.Println("Find:", id)
+		log.Println("Find:", id)
 		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
 		defer resp.Body.Close()
 		re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
@@ -224,8 +229,7 @@ func getMovieFromLbl(movie string, results chan string) {
 			results <- "Results from lbldy.com:\n\n"
 			ret := ""
 			for i := range downloads {
-				log.Printf("found %s: %s\n", string(downloads[i][2]), string(downloads[i][1]))
-				ret = string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
+				ret += string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
 			}
 			results <- ret
 		}

@@ -82,7 +82,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		case "downloadMovie":
-			results := make(chan string)
+			var results = make(chan string)
 			//			rb.Reply(update, "Searching...")
 			go rb.DownloadMovie(update, action.ActionStep, results)
 			for {
