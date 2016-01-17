@@ -219,7 +219,9 @@ func getMovieFromLbl(movie string, results chan string, wg *sync.WaitGroup) {
 		id = string(firstId[1])
 		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
 		defer resp.Body.Close()
-		re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
+		//		re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
+		re, _ = regexp.Compile("<p><a href=\"(.*?)\"(| target=\"_blank)\">(.*?)</a></p>")
+
 		body, _ = ioutil.ReadAll(resp.Body)
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
