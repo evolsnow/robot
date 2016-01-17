@@ -172,7 +172,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	return ""
 }
 
-func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int) (ret string) {
+func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
@@ -182,39 +182,52 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int) (ret string) {
 		userAction[user] = tmpAction
 		ret = "Ok, which movie do you want to download?"
 	case 1:
-		defer delete(userAction, user)
+		defer func() {
+			delete(userAction, user)
+			results <- "done"
+		}()
+		go func() { results <- "Searching..." }()
 		movie := update.Message.Text
-		var id string
-		resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("http read error")
-			return "network error, try again later"
-		}
-		re, _ := regexp.Compile("<div class=\"postlist\" id=\"post-(.*?)\">")
-		//find first match case
-		firstId := re.FindSubmatch(body)
-		if len(firstId) == 0 {
-			ret = fmt.Sprintf("no answer for %s", movie)
-		} else {
-			id = string(firstId[1])
-			fmt.Println("Find:", id)
-			resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
-			defer resp.Body.Close()
-			re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
-			body, _ = ioutil.ReadAll(resp.Body)
-			downloads := re.FindAllSubmatch(body, -1)
-			if len(downloads) == 0 {
-				ret = fmt.Sprintf("no answer for %s", movie)
-			} else {
-				ret = "Great, your can download from the following links:\n\n"
-				for i := range downloads {
-					log.Printf("found %s: %s\n", string(downloads[i][2]), string(downloads[i][1]))
-					ret += string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
-				}
-			}
-		}
+		go getMovieFromLbl(movie, results)
 	}
 	return
+}
+
+func getMovieFromLbl(movie string, results chan string) {
+	var id string
+	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		//		fmt.Println("http read error")
+		//		results <- "network error, try again later"
+		return
+	}
+	re, _ := regexp.Compile("<div class=\"postlist\" id=\"post-(.*?)\">")
+	//find first match case
+	firstId := re.FindSubmatch(body)
+	if len(firstId) == 0 {
+		//		results <- fmt.Sprintf("no answer for %s from lbldy.com", movie)
+		return
+	} else {
+		id = string(firstId[1])
+		fmt.Println("Find:", id)
+		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
+		defer resp.Body.Close()
+		re, _ = regexp.Compile("<p><a href=\"(.*?)\" target=\"_blank\">(.*?)</a></p>")
+		body, _ = ioutil.ReadAll(resp.Body)
+		downloads := re.FindAllSubmatch(body, -1)
+		if len(downloads) == 0 {
+			//			results <- fmt.Sprintf("no answer for *%s*", movie)
+			return
+		} else {
+			results <- "Results from lbldy.com:\n\n"
+			ret := ""
+			for i := range downloads {
+				log.Printf("found %s: %s\n", string(downloads[i][2]), string(downloads[i][1]))
+				ret = string(downloads[i][2]) + "\n" + string(downloads[i][1]) + "\n\n"
+			}
+			results <- ret
+		}
+	}
 }

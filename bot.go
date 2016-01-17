@@ -82,8 +82,19 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		case "downloadMovie":
-			rb.Reply(update, "Searching")
-			rawMsg = rb.DownloadMovie(update, action.ActionStep)
+			results := make(chan string)
+			//			rb.Reply(update, "Searching...")
+			go rb.DownloadMovie(update, action.ActionStep, results)
+			for {
+				select {
+				case msg := <-results:
+					if msg == "done" {
+						return
+					}
+					rb.Reply(update, msg)
+				}
+			}
+			//			rawMsg = rb.DownloadMovie(update, action.ActionStep)
 		}
 	} else if string([]rune(text)[:2]) == "翻译" {
 		rawMsg = rb.Translate(update)
@@ -108,7 +119,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "downloadMovie"
 			userAction[user] = tmpAction
-			rawMsg = rb.DownloadMovie(update, 0)
+			rawMsg = rb.DownloadMovie(update, 0, nil)
 		case "/evolve":
 			rawMsg = "upgrading..."
 			go conn.SetMasterId(chatId)
