@@ -279,13 +279,14 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 }
 
 func GetShowFromZMZ(show, s, e string, results chan string) {
+	log.Println(show, s, e)
 	downloads := getZMZResource(show)
 	if downloads == nil {
 		results <- fmt.Sprintf("no result for *%s* from zmz", show)
 		return
 	}
 	//second parse
-	re, _ := regexp.Compile(fmt.Sprintf(".*?season=\"%d\" episode=\"%d\">.*?", s, e))
+	re, _ := regexp.Compile(fmt.Sprintf(".*?season=\"%s\" episode=\"%s\">.*?", s, e))
 	results <- "Results from zmz:\n\n"
 	for i := range downloads {
 		if re.Find(downloads[i][0]) != nil {
