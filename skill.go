@@ -220,8 +220,8 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 			results <- "done"
 		}()
 		results <- "Searching American show..."
-		movie := update.Message.Text
-		GetShowFromZMZ(movie, results)
+		info := strings.Split(update.Message.Text, " ")
+		GetShowFromZMZ(info[0], info[1], info[2], results)
 	}
 	return
 }
@@ -278,14 +278,14 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	return
 }
 
-func GetShowFromZMZ(show string, results chan string) {
+func GetShowFromZMZ(show, s, e string, results chan string) {
 	downloads := getZMZResource(show)
 	if downloads == nil {
 		results <- fmt.Sprintf("no result for *%s* from zmz", show)
 		return
 	}
 	//second parse
-	re, _ := regexp.Compile(`.*?season="1" episode="1">.*?`)
+	re, _ := regexp.Compile(fmt.Sprintf(".*?season=\"%d\" episode=\"%d\">.*?", s, e))
 	results <- "Results from zmz:\n\n"
 	for i := range downloads {
 		if re.Find(downloads[i][0]) != nil {
