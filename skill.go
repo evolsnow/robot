@@ -251,7 +251,8 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	//1.name 2.size 3.link
 	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
 	body, _ := ioutil.ReadAll(resp.Body)
-	body = []byte(strings.Replace(string(body), "\n", "", -1))
+	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
+	body = []byte(strings.Replace(tmp, `<div class="fr">\n`, "", -1))
 	downloads := re.FindAllSubmatch(body, -1)
 	if len(downloads) == 0 {
 		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
