@@ -278,13 +278,17 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	return
 }
 
-func GetShowFromZMZ(movie string, results chan string) {
-	if downloads := getZMZResource(movie); downloads == nil {
-		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
+func GetShowFromZMZ(show string, results chan string) {
+	downloads := getZMZResource(show)
+	if downloads == nil {
+		results <- fmt.Sprintf("no result for *%s* from zmz", show)
 		return
-	} else {
-		results <- "Results from zmz:\n\n"
-		for i := range downloads {
+	}
+	//second parse
+	re, _ := regexp.Compile(`.*?season="1" episode="1">.*?`)
+	results <- "Results from zmz:\n\n"
+	for i := range downloads {
+		if re.Find(downloads[i][0]) != nil {
 			name := string(downloads[i][1])
 			size := string(downloads[i][2])
 			link := string(downloads[i][3])
@@ -303,25 +307,16 @@ func getZMZResource(name string) [][][]byte {
 	resp, _ := zmzClient.Get(resourceURL)
 	defer resp.Body.Close()
 	//1.name 2.size 3.link
-	re, _ := regexp.Compile(`<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
+	re, _ := regexp.Compile(`<li class="clearfix".*?<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
 	body, _ := ioutil.ReadAll(resp.Body)
-	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
-	body = []byte(strings.Replace(tmp, "<div class=\"fr\">\n", "", -1))
+	body = []byte(strings.Replace(string(body), "\n", "", -1))
+	//	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
+	//	body = []byte(strings.Replace(tmp, "<div class=\"fr\">\n", "", -1))
 	downloads := re.FindAllSubmatch(body, -1)
 	if len(downloads) == 0 {
 		return nil
 	}
-	//else {
-	//		results <- "Results from zmz:\n\n"
 	return downloads
-	//		for i := range downloads {
-	//			name := string(downloads[i][1])
-	//			size := string(downloads[i][2])
-	//			link := string(downloads[i][3])
-	//			results<- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-	//		}
-	//	}
-	//	return
 }
 
 func getZMZResourceId(name string) (id string) {
