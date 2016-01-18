@@ -46,7 +46,7 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HGetAllMemos(user string) (ret []interface{}) {
+func HGetAllMemos(user string) (ret []string) {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetMemoLua = `
@@ -58,7 +58,7 @@ func HGetAllMemos(user string) (ret []interface{}) {
   	return ret
    `
 	script := redis.NewScript(1, multiGetMemoLua)
-	ret, _ = redis.Values(script.Do(c, user))
+	ret, _ = redis.Strings(script.Do(c, user))
 	return
 }
 
