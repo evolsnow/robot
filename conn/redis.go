@@ -2,6 +2,7 @@ package conn
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"log"
 )
 
 type Memo struct {
@@ -64,13 +65,18 @@ func HGetAllMemos(user string) []Memo {
    `
 	var memos *[]Memo
 	script := redis.NewScript(1, multiGetMemoLua)
-	values, _ := redis.Values(script.Do(c, user))
+	values, err := redis.Values(script.Do(c, user))
+	if err != nil {
+		log.Println(err)
+	}
 	//	for i := range values {
 	//		m := new(Memo)
 	//		redis.ScanStruct(values[i], &m)
 	//		memos = append(memos, m)
 	//	}
-	redis.ScanStruct(values, memos)
+	if err = redis.ScanStruct(values, memos); err != nil {
+		log.Println(err)
+	}
 	return *memos
 }
 
