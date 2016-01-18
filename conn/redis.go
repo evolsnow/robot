@@ -11,11 +11,11 @@ type Memo struct {
 }
 
 type Task struct {
-	Id     int
-	ChatId int
-	Owner  string
-	Desc   string
-	When   string
+	Id     int    `redis:"id"`
+	ChatId int    `redis:"chatId"`
+	Owner  string `redis:"owner"`
+	Desc   string `redis:"content"`
+	When   string `redis:"time"`
 }
 
 //All redis actions
@@ -66,7 +66,7 @@ func HSetTask(ts Task) int {
 	var setTaskLua = `
 	local id = redis.call("INCR", "taskIncrId")
 	redis.call("RPUSH", KEYS[1]..":tasks", id)
-	redis.call("HMSET", "task:"..id, "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
+	redis.call("HMSET", "task:"..id, "owner", KEYS[1], "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
 	return id
 	`
 	script := redis.NewScript(4, setTaskLua)
@@ -84,6 +84,33 @@ func RemoveTask(ts Task) {
 	`
 	script := redis.NewScript(2, removeTaskLua)
 	script.Do(c, ts.Owner, ts.Id)
+}
+
+func HGetUserTasks(user string) []Task {
+	c := Pool.Get()
+	defer c.Close()
+	var multiGetTaskLua = `
+	local data = redis.call("LRANGE", KEYS[1]..":memos", "0", "-1")
+	local ret = {}
+  	for idx=1, #data do
+  		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
+  		ret[idx].insert("id",data[idx])
+  	end
+  	return ret
+   `
+	var tasks []Task
+	script := redis.NewScript(1, multiGetTaskLua)
+	values, err := redis.Values(script.Do(c, user))
+	if err != nil {
+		log.Println(err)
+	}
+	for i := range values {
+		t := new(Task)
+		redis.ScanStruct(values[i].([]interface{}), t)
+		log.Println(t)
+		tasks = append(tasks, *t)
+	}
+	return tasks
 }
 
 func HGetAllMemos(user string) []Memo {

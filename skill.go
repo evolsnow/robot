@@ -36,7 +36,8 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
-/allmemos - get all of your memos
+/allalarms -show all of your alarms
+/allmemos - show all of your memos
 /evolve	- self evolution of me
 /memo  save a memo
 /movie - find movie download links
@@ -137,10 +138,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//save time duration
 		text := update.Message.Text
 		text = strings.Replace(text, "：", ":", -1)
-		//		firstFormat := "1/02 15:04"
-		//		secondFormat := "15:04"
-		//		thirdFormat := "15:04:05"
-		//		redisFormat := "1/02 15:04:05" //save to redis format
 		var showTime string  //show to user
 		var redisTime string //time string to save to redis
 		var scheduledTime time.Time
@@ -163,7 +160,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 					return "wrong format, try '2/14 11:30' or '11:30'?"
 				}
 			}
-			//			du = scheduledTime.Sub(nowTime)
 		} else { //third case
 
 			du, err = time.ParseDuration(text)
@@ -187,7 +183,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 }
 
 func (rb *Robot) DoTask(ts conn.Task) {
-	//	defer conn.RemoveTask(ts)
 	ts.Id = conn.HSetTask(ts)
 	nowString := time.Now().Format(RedisFormat)
 	now, _ := time.Parse(RedisFormat, nowString)
@@ -207,6 +202,18 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 	}
 	conn.RemoveTask(ts)
+}
+
+func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
+	user := update.Message.Chat.UserName
+	tasks := conn.HGetUserTasks(user)
+	if len(tasks) == 0 {
+		return "You have no alarm now, type '/alarm' to set one?"
+	}
+	for i := range tasks {
+		ret += fmt.Sprintf("%s:  *%s*\n", tasks[i].Desc, tasks[i].When)
+	}
+	return
 }
 
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
