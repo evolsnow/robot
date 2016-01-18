@@ -71,14 +71,13 @@ func HSetTask(ts Task) int {
 	`
 	script := redis.NewScript(4, setTaskLua)
 	id, _ := redis.Int(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
-	log.Println(id)
 	return id
 }
 
 func RemoveTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
-	log.Println(ts.Id)
+	log.Println("remove", ts.Id)
 	var removeTaskLua = `
 	redis.call("LREM", KEYS[1]..":tasks", 1, KEYS[2])
 	redis.call("DEL", "task:"..KEYS[2])
