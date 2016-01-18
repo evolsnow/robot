@@ -82,6 +82,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		switch action.ActionName {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
+		case "saveMemo":
+			rawMsg = rb.SaveMemo(update, action.ActionStep)
 		case "downloadMovie":
 			results := make(chan string, 2)
 			go rb.DownloadMovie(update, action.ActionStep, results)
@@ -121,6 +123,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.Start(update)
 		case "/help":
 			rawMsg = rb.Help(update)
+		case "/allmemos":
+			rawMsg = rb.GetAllMemos(update)
 		case "/trans":
 			rawMsg = rb.Translate(update)
 		case "/alarm":
@@ -133,6 +137,11 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			tmpAction.ActionName = "downloadMovie"
 			userAction[user] = tmpAction
 			rawMsg = rb.DownloadMovie(update, 0, nil)
+		case "/memo":
+			tmpAction := userAction[user]
+			tmpAction.ActionName = "saveMemo"
+			userAction[user] = tmpAction
+			rawMsg = rb.SaveMemo(update, 0)
 		case "/show":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "downloadShow"
@@ -151,11 +160,6 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	if rawMsg == "" {
 		return
 	}
-
-	//	msg := tgbotapi.NewMessage(chatId, rawMsg)
-	//	msg.ParseMode = "markdown"
-	//	log.Printf(rawMsg)
-	//	_, err := rb.bot.Send(msg)
 
 	if err := rb.Reply(update, rawMsg); err != nil {
 		panic(err)

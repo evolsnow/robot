@@ -34,9 +34,33 @@ func GetUserChatId(user string) int {
 	return id
 }
 
-func SaveTask() {
+func HSetMemo(time, user, memo string) {
 	c := Pool.Get()
 	defer c.Close()
-	//	id:=incr(taskIncrId)
-	//	rpush task
+	var setMemoLua = `
+	local id = redis.call("INCR", "memoIncrId")
+	redis.call("RPUSH", user..":memo:", id)
+	redis.call("HMSET", "memo:"..id, "time", KEYS[1], "content", KEYS[2])
+	`
+	script := redis.NewScript(2, setMemoLua)
+	script.Do(c, time, memo)
 }
+
+func HGetAllMemos(user string) (ret []map[string]string) {
+	c := Pool.Get()
+	defer c.Close()
+	var multiGetMemoLua = `
+	local data = redis.call("LRANGE", KEYS[1]..":memo")
+	local ret = {}
+  	for idx=1, #data do
+  		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
+  	end
+  	return ret
+   `
+	script := redis.NewScript(1, multiGetMemoLua)
+	ret, _ = redis.StringMap(script.Do(c, user))
+	return
+}
+
+//
+//var multiGetScript = redis.NewScript(0, multiGetMemoLua)

@@ -29,7 +29,9 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
+/allmemos - get all of your memos
 /evolve	- self evolution of me
+/memo  save a memo
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
@@ -224,6 +226,34 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		GetShowFromZMZ(info[0], info[1], info[2], results)
 		delete(userAction, user)
 		results <- "done"
+	}
+	return
+}
+
+func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
+	user := update.Message.Chat.UserName
+	switch step {
+	case 0:
+		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		ret = "Ok, what do you want to save?"
+	case 1:
+		defer delete(userAction, user)
+		time := time.Now.Format("2016-1-02 15:04")
+		memo := update.Message.Text
+		go conn.HSetMemo(time, user, memo)
+		ret = "Ok, type '/allmemos' to see all your memos"
+	}
+	return
+}
+
+func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
+	user := update.Message.Chat.UserName
+	memos := conn.HGetAllMemos(user)
+	for time, content := range memos {
+		ret += fmt.Sprintf("%s:%s", time, content)
 	}
 	return
 }
