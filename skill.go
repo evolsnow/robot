@@ -236,7 +236,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 	//find first match case
 	firstId := re.FindSubmatch(body)
 	if len(firstId) == 0 {
-		results <- fmt.Sprintf("no result for *%s* from lbl", movie)
+		results <- fmt.Sprintf("o result for *%s* from LBL", movie)
 		return
 	} else {
 		id = string(firstId[1])
@@ -248,15 +248,15 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
-			results <- fmt.Sprintf("no result for *%s* from lbl", movie)
+			results <- fmt.Sprintf("No result for *%s* from LBL", movie)
 			return
 		} else {
-			ret := "Results from lbl:\n\n"
+			ret := "Results from LBL:\n\n"
 			for i := range downloads {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
-				if i%6 == 0 && i > 0 {
+				if i%5 == 0 && i > 0 {
 					results <- ret
-					ret = fmt.Sprintf("*Part %d*\n\n", i/6+1)
+					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/5+1)
 				}
 			}
 			results <- ret
@@ -268,18 +268,18 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	loginZMZ()
 	if downloads := getZMZResource(movie); downloads == nil {
-		results <- fmt.Sprintf("no result for *%s* from zmz", movie)
+		results <- fmt.Sprintf("No result for *%s* from ZMZ", movie)
 		return
 	} else {
-		ret := "Results from zmz:\n\n"
+		ret := "Results from ZMZ:\n\n"
 		for i := range downloads {
 			name := string(downloads[i][1])
 			size := string(downloads[i][2])
 			link := string(downloads[i][3])
 			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i%6 == 0 && i > 0 {
+			if i%5 == 0 && i > 0 {
 				results <- ret
-				ret = fmt.Sprintf("*Part %d*\n\n", i/6+1)
+				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/5+1)
 			}
 		}
 		results <- ret
@@ -291,7 +291,7 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 	loginZMZ()
 	downloads := getZMZResource(show)
 	if downloads == nil {
-		results <- fmt.Sprintf("no result for *%s* from zmz", show)
+		results <- fmt.Sprintf("No result for *%s* from ZMZ", show)
 		return
 	}
 	//second parse
@@ -302,7 +302,7 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 			name := string(downloads[i][1])
 			size := string(downloads[i][2])
 			link := string(downloads[i][3])
-			results <- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+			results <- fmt.Sprintf("*ZMZ %s*(%s)\n```%s```\n\n", name, size, link)
 		}
 	}
 	return
