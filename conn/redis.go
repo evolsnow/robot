@@ -11,7 +11,7 @@ type Memo struct {
 }
 
 type Task struct {
-	Id     int    `redis:"id"`
+	Id     int
 	ChatId int    `redis:"chatId"`
 	Owner  string `redis:"owner"`
 	Desc   string `redis:"content"`
