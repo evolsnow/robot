@@ -83,7 +83,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		case "setReminder":
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		case "downloadMovie":
-			results := make(chan string)
+			results := make(chan string, 2)
 			go rb.DownloadMovie(update, action.ActionStep, results)
 			for {
 				select {
@@ -96,7 +96,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 
 			}
 		case "downloadShow":
-			results := make(chan string)
+			results := make(chan string, 5)
 			go rb.DownloadShow(update, action.ActionStep, results)
 			for {
 				select {

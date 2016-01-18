@@ -244,7 +244,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		defer resp.Body.Close()
 		re, _ = regexp.Compile(`<p><a href="(.*?)"( target="_blank">|>)(.*?)</a></p>`)
 		body, _ := ioutil.ReadAll(resp.Body)
-		//go does not support (?!)
+		//go does not support (?!) regex
 		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
@@ -254,6 +254,10 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 			ret := "Results from lbl:\n\n"
 			for i := range downloads {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
+				if i%6 == 0 {
+					results <- ret
+					ret = fmt.Sprintf("Part %d", i/6)
+				}
 			}
 			results <- ret
 		}
