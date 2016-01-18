@@ -39,7 +39,7 @@ func HSetMemo(user, time, memo string) {
 	defer c.Close()
 	var setMemoLua = `
 	local id = redis.call("INCR", "memoIncrId")
-	redis.call("RPUSH", KEYS[1]..":memo:", id)
+	redis.call("RPUSH", KEYS[1]..":memos", id)
 	redis.call("HMSET", "memo:"..id, "time", KEYS[2], "content", KEYS[3])
 	`
 	script := redis.NewScript(3, setMemoLua)
@@ -50,7 +50,7 @@ func HGetAllMemos(user string) (ret []interface{}) {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetMemoLua = `
-	local data = redis.call("LRANGE", KEYS[1]..":memo", "0", "-1")
+	local data = redis.call("LRANGE", KEYS[1]..":memos", "0", "-1")
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
