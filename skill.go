@@ -211,7 +211,7 @@ func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 		return "You have no alarm now, type '/alarm' to set one?"
 	}
 	for i := range tasks {
-		ret += fmt.Sprintf("%s:  %s\n", tasks[i].When, tasks[i].Desc)
+		ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
 	}
 	return
 }
@@ -295,7 +295,7 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	//		memos[i] = before.(map[string]string)
 	//	}
 	for i := range memos {
-		ret += fmt.Sprintf("%s:  *%s*\n", memos[i].Time, memos[i].Content)
+		ret += fmt.Sprintf("%d. %s:  *%s*\n", i+1, memos[i].Time, memos[i].Content)
 	}
 	return
 }
