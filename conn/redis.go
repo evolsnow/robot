@@ -62,10 +62,14 @@ func HGetAllMemos(user string) *[]Memo {
   	end
   	return ret
    `
-	memos := []Memo{}
+	var memos []Memo
 	script := redis.NewScript(1, multiGetMemoLua)
 	values, _ := redis.Values(script.Do(c, user))
-	redis.ScanStruct(values, &memos)
+	for i := range values {
+		m := new(Memo)
+		redis.ScanStruct(values[i], &m)
+		memos = append(memos, m)
+	}
 	return &memos
 }
 
