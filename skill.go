@@ -181,7 +181,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		userTask[user] = tmpTask
 
 		go rb.DoTask(userTask[user])
-
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
@@ -193,11 +192,12 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	now := time.Now()
 	when, _ := time.Parse(RedisFormat, ts.When)
 	if when.After(now) {
+		log.Println("after")
+		//set timer
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
 		<-timer.C
 	}
-	//set timer
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 	msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 	msg.ParseMode = "markdown"
