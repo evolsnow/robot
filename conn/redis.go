@@ -94,7 +94,7 @@ func HGetUserTasks(user string) []Task {
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
-  		print ret[idx]
+  		print(ret[idx])
   	end
   	return ret
    `
