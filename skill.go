@@ -174,9 +174,11 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//save time
 		tmpTask := userTask[user]
 		tmpTask.When = redisTime
+		tmpTask.Id = conn.GetTaskId()
 		userTask[user] = tmpTask
-		go conn.HSetTask(&tmpTask)
-		go rb.DoTask(tmpTask)
+
+		go rb.DoTask(userTask[user])
+		go conn.HSetTask(userTask[user])
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
