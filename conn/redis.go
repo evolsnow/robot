@@ -11,7 +11,7 @@ type Memo struct {
 }
 
 type Task struct {
-	Id     int
+	Id     string
 	ChatId int
 	Owner  string
 	Desc   string
@@ -74,7 +74,7 @@ func HSetTask(ts Task) string {
 	return id
 }
 
-func RemoveTask(id string, ts Task) {
+func RemoveTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
 	var removeTaskLua = `
@@ -82,7 +82,7 @@ func RemoveTask(id string, ts Task) {
 	redis.call("DEL", "task:"..KEYS[2])
 	`
 	script := redis.NewScript(2, removeTaskLua)
-	script.Do(c, ts.Owner, id)
+	script.Do(c, ts.Owner, ts.Id)
 }
 
 func HGetAllMemos(user string) []Memo {
