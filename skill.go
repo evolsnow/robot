@@ -253,15 +253,15 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
 	//	beforeParse := conn.HGetAllMemos(user)
 	//	memos := make([]map[string]string, len(beforeParse))
-	memosPtr := conn.HGetAllMemos(user)
-	if len(*memosPtr) == 0 {
+	memos := conn.HGetAllMemos(user)
+	if len(memos) == 0 {
 		return "You have no memo now, type '/memo' to save one?"
 	}
 	//	for i, before := range beforeParse {
 	//		memos[i] = before.(map[string]string)
 	//	}
-	for i := range *memosPtr {
-		ret += fmt.Sprintf("%s: %s", (*memosPtr)[i].Time, (*memosPtr)[i].Content)
+	for i := range memos {
+		ret += fmt.Sprintf("%s: %s", memos[i].Time, memos[i].Content)
 	}
 	return
 }

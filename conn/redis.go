@@ -51,7 +51,7 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HGetAllMemos(user string) *[]Memo {
+func HGetAllMemos(user string) []Memo {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetMemoLua = `
@@ -71,7 +71,7 @@ func HGetAllMemos(user string) *[]Memo {
 	//		memos = append(memos, m)
 	//	}
 	redis.ScanStruct(values, memos)
-	return memos
+	return *memos
 }
 
 //
