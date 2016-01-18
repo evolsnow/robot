@@ -189,7 +189,6 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	now, _ := time.Parse(RedisFormat, nowString)
 	when, _ := time.Parse(RedisFormat, ts.When)
 	if when.After(now) {
-		log.Println("after")
 		//set timer
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
