@@ -183,7 +183,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 }
 
 func (rb *Robot) DoTask(ts conn.Task) {
-	ts.Id = conn.HSetTask(ts)
+	conn.HSetTask(*ts)
 	nowString := time.Now().Format(RedisFormat)
 	now, _ := time.Parse(RedisFormat, nowString)
 	when, _ := time.Parse(RedisFormat, ts.When)

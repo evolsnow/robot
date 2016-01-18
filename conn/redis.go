@@ -60,18 +60,18 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HSetTask(ts Task) int {
+func HSetTask(ts *Task) {
 	c := Pool.Get()
 	defer c.Close()
 	var setTaskLua = `
 	local id = redis.call("INCR", "taskIncrId")
 	redis.call("RPUSH", KEYS[1]..":tasks", id)
-	redis.call("HMSET", "task:"..id, "owner", KEYS[1], "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
+	redis.call("HMSET", "task:"..id, "id", id, "owner", KEYS[1], "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
 	return id
 	`
 	script := redis.NewScript(4, setTaskLua)
 	id, _ := redis.Int(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
-	return id
+	ts.Id = id
 }
 
 func RemoveTask(ts Task) {
@@ -93,7 +93,7 @@ func HGetUserTasks(user string) []Task {
 	local data = redis.call("LRANGE", KEYS[1]..":memos", "0", "-1")
 	local ret = {}
   	for idx=1, #data do
-  		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
+  		ret[idx] = redis.call("HGETALL", "task:"..data[idx])
   		print(ret[idx])
   	end
   	return ret
