@@ -191,6 +191,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	ts.Id = conn.HSetTask(ts)
 	now := time.Now()
 	when, _ := time.Parse(RedisFormat, ts.When)
+	log.Println(when)
 	if when.After(now) {
 		log.Println("after")
 		//set timer
