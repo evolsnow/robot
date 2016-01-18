@@ -296,13 +296,19 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 	}
 	//second parse
 	re, _ := regexp.Compile(fmt.Sprintf(".*?season=\"%s\" episode=\"%s\">.*?", s, e))
-	results <- "Results from zmz:\n\n"
+	results <- "Results from ZMZ:\n\n"
+	count := 0
 	for i := range downloads {
 		if re.Find(downloads[i][0]) != nil {
 			name := string(downloads[i][1])
 			size := string(downloads[i][2])
 			link := string(downloads[i][3])
 			results <- fmt.Sprintf("*ZMZ %s*(%s)\n```%s```\n\n", name, size, link)
+			count++
+		}
+		if count == 0 {
+			results <- fmt.Sprintf("No result found for *S%sE%s*", s, e)
+
 		}
 	}
 	return
