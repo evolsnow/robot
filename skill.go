@@ -224,7 +224,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		if len(info) < 3 {
 			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
 			tmpAction := userAction[user]
-			tmpAction.ActionStep--
+			tmpAction.ActionStep = 1
 			userAction[user] = tmpAction
 			return
 		}
