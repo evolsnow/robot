@@ -80,10 +80,10 @@ func RemoveTask(ts Task) {
 	log.Println("remove", ts.Id)
 	var removeTaskLua = `
 	redis.call("LREM", KEYS[1]..":tasks", 1, KEYS[2])
-	redis.call("DEL", "task:"..KEYS[2])
+	redis.call("DEL", "task:"..KEYS[3])
 	`
-	script := redis.NewScript(2, removeTaskLua)
-	script.Do(c, ts.Owner, ts.Id)
+	script := redis.NewScript(3, removeTaskLua)
+	script.Do(c, ts.Owner, ts.Id, ts.Id)
 }
 
 func HGetAllMemos(user string) []Memo {
