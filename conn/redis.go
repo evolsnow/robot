@@ -10,6 +10,14 @@ type Memo struct {
 	Content string `redis:"content"`
 }
 
+type Task struct {
+	Id     int
+	ChatId int
+	Owner  string
+	Desc   string
+	When   string
+}
+
 //All redis actions
 
 func SetMasterId(id int) {
@@ -52,16 +60,29 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HSetTask(user, time, desc string) {
+func HSetTask(time string, ts *Task) {
 	c := Pool.Get()
 	defer c.Close()
 	var setTaskLua = `
 	local id = redis.call("INCR", "taskIncrId")
 	redis.call("RPUSH", KEYS[1]..":tasks", id)
-	redis.call("HMSET", "task:"..id, "time", KEYS[2], "content", KEYS[3])
+	redis.call("HMSET", "task:"..id, "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
+	return id
 	`
 	script := redis.NewScript(3, setTaskLua)
-	script.Do(c, user, time, desc)
+	id, _ := redis.Int(script.Do(c, ts.Owner, time, ts.Desc, ts.ChatId))
+	ts.Id = id
+}
+
+func RemoveTask(ts *Task) {
+	c := Pool.Get()
+	defer c.Close()
+	var removeTaskLua = `
+	redis.call("LREM", KEYS[1]..":tasks", 1, KEYS[2])
+	redis.call("DEL", "task:"..KEYS[2])
+	`
+	script := redis.NewScript(3, removeTaskLua)
+	script.Do(c, ts.Owner, ts.Id)
 }
 
 func HGetAllMemos(user string) []Memo {

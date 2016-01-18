@@ -171,8 +171,12 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//				tmpTask := userTask[user]
 		//				tmpTask.When = redisTime
 		//				userTask[user] = tmpTask
-		go conn.HSetTask(user, redisTime, userTask[user].Desc)
-		go func(rb *Robot, ts Task) {
+		go conn.HSetTask(redisTime, userTask[user])
+		go func(rb *Robot, ts *conn.Task) {
+			defer func(ts *conn.Task) {
+				go conn.RemoveTask(ts)
+				delete(userTask, user)
+			}(userTask[user])
 			timer := time.NewTimer(du)
 			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
@@ -182,7 +186,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			if err != nil {
 				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 			}
-			delete(userTask, user)
 		}(rb, userTask[user])
 
 		//		delete(userAction, user)
