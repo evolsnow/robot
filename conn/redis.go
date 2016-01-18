@@ -72,13 +72,11 @@ func HSetTask(ts Task) {
 	defer c.Close()
 	log.Println("save task")
 	var setTaskLua = `
-	redis.call("RPUSH", KEYS[2]..":tasks", id)
+	redis.call("RPUSH", KEYS[2]..":tasks", KEYS[1])
 	redis.call("HMSET", "task:"..KEYS[1], "owner", KEYS[2], "time", KEYS[3], "content", KEYS[4], "chatID", KEYS[5])
 	`
 	script := redis.NewScript(5, setTaskLua)
-	if _, err := script.Do(c, ts.Id, ts.Owner, ts.When, ts.Desc, ts.ChatId); err != nil {
-		log.Println(err)
-	}
+	script.Do(c, ts.Id, ts.Owner, ts.When, ts.Desc, ts.ChatId)
 }
 
 func RemoveTask(ts Task) {
