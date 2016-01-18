@@ -70,6 +70,7 @@ func GetTaskId() int {
 func HSetTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
+	log.Println("save task")
 	var setTaskLua = `
 	redis.call("RPUSH", KEYS[2]..":tasks", id)
 	redis.call("HMSET", "task:"..KEYS[1], "owner", KEYS[2], "time", KEYS[3], "content", KEYS[4], "chatID", KEYS[5])
