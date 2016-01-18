@@ -11,7 +11,7 @@ type Memo struct {
 }
 
 type Task struct {
-	Id     string
+	Id     int
 	ChatId int
 	Owner  string
 	Desc   string
@@ -60,7 +60,7 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HSetTask(ts Task) string {
+func HSetTask(ts Task) int {
 	c := Pool.Get()
 	defer c.Close()
 	var setTaskLua = `
@@ -70,13 +70,14 @@ func HSetTask(ts Task) string {
 	return id
 	`
 	script := redis.NewScript(4, setTaskLua)
-	id, _ := redis.String(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
+	id, _ := redis.Int(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
 	return id
 }
 
 func RemoveTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
+	log.Println("remove", ts.Id)
 	var removeTaskLua = `
 	redis.call("LREM", KEYS[1]..":tasks", 1, KEYS[2])
 	redis.call("DEL", "task:"..KEYS[2])
