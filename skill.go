@@ -181,13 +181,14 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 }
 
 func (rb *Robot) DoTask(user string, ts conn.Task, du time.Duration) {
+	id := conn.HSetTask(userTask[user])
 	defer func(ts conn.Task) {
-		conn.RemoveTask(userTask[user])
+		conn.RemoveTask(id, userTask[user])
 		delete(userTask, user)
 	}(userTask[user])
 	//save id
 	tmpTask := userTask[user]
-	tmpTask.Id = conn.HSetTask(userTask[user])
+	tmpTask.Id = id
 	userTask[user] = tmpTask
 	//set timer
 	timer := time.NewTimer(du)
