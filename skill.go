@@ -17,6 +17,13 @@ import (
 	"time"
 )
 
+const (
+	FirstFormat  = "1/02 15:04"
+	SecondFormat = "15:04"
+	ThirdFormat  = "15:04:05"
+	RedisFormat  = "1/02 15:04:05" //save to redis format
+)
+
 //zmz.tv needs to login before downloading
 var zmzClient http.Client
 
@@ -130,39 +137,39 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//save time duration
 		text := update.Message.Text
 		text = strings.Replace(text, "：", ":", -1)
-		firstFormat := "1/02 15:04"
-		secondFormat := "15:04"
-		thirdFormat := "15:04:05"
-		redisFormat := "1/02 15:04:05" //save to redis format
-		var showTime string            //show to user
-		var redisTime string           //time string to save to redis
+		//		firstFormat := "1/02 15:04"
+		//		secondFormat := "15:04"
+		//		thirdFormat := "15:04:05"
+		//		redisFormat := "1/02 15:04:05" //save to redis format
+		var showTime string  //show to user
+		var redisTime string //time string to save to redis
 		var scheduledTime time.Time
 		var nowTime = time.Now()
 		var du time.Duration
 		var err error
 		if strings.Contains(text, ":") {
-			scheduledTime, err = time.Parse(firstFormat, text)
-			nowTime, _ = time.Parse(firstFormat, nowTime.Format(firstFormat))
-			showTime = scheduledTime.Format(firstFormat)
-			redisTime = scheduledTime.Format(redisFormat)
+			scheduledTime, err = time.Parse(FirstFormat, text)
+			//			nowTime, _ = time.Parse(FirstFormat, nowTime.Format(FirstFormat))
+			showTime = scheduledTime.Format(FirstFormat)
+			redisTime = scheduledTime.Format(RedisFormat)
 			//second case
 			if err != nil { //try to parse with second format
-				scheduledTime, err = time.Parse(secondFormat, text)
-				redisTime = nowTime.Format("1/02 ") + scheduledTime.Format(thirdFormat)
-				nowTime, _ = time.Parse(secondFormat, nowTime.Format(secondFormat))
-				showTime = scheduledTime.Format(secondFormat)
+				scheduledTime, err = time.Parse(SecondFormat, text)
+				redisTime = nowTime.Format("1/02 ") + scheduledTime.Format(ThirdFormat)
+				//				nowTime, _ = time.Parse(SecondFormat, nowTime.Format(SecondFormat))
+				showTime = scheduledTime.Format(SecondFormat)
 
 				if err != nil {
 					return "wrong format, try '2/14 11:30' or '11:30'?"
 				}
 			}
-			du = scheduledTime.Sub(nowTime)
+			//			du = scheduledTime.Sub(nowTime)
 		} else { //third case
 
 			du, err = time.ParseDuration(text)
 			scheduledTime = nowTime.Add(du)
-			showTime = scheduledTime.Format(thirdFormat)
-			redisTime = scheduledTime.Format(redisFormat)
+			showTime = scheduledTime.Format(ThirdFormat)
+			redisTime = scheduledTime.Format(RedisFormat)
 
 			if err != nil {
 				return "wrong format, try '1h2m3s'?"
@@ -173,28 +180,27 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpTask.When = redisTime
 		userTask[user] = tmpTask
 
-		go rb.DoTask(user, userTask[user], du)
+		go rb.DoTask(userTask[user])
 
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
 }
 
-func (rb *Robot) DoTask(user string, ts conn.Task, du time.Duration) {
-	defer func(ts conn.Task) {
-		conn.RemoveTask(userTask[user])
-		delete(userTask, user)
-	}(userTask[user])
-	//save id
-	tmpTask := userTask[user]
-	tmpTask.Id = conn.HSetTask(userTask[user])
-	userTask[user] = tmpTask
+func (rb *Robot) DoTask(ts conn.Task) {
+	defer conn.RemoveTask(ts)
+	ts.Id = conn.HSetTask(ts)
+	now := time.Now()
+	when, _ := time.Parse(RedisFormat, ts.When)
+	if when.After(now) {
+		du := when.Sub(now)
+		timer := time.NewTimer(du)
+		<-timer.C
+	}
 	//set timer
-	timer := time.NewTimer(du)
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 	msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 	msg.ParseMode = "markdown"
-	<-timer.C
 	_, err := rb.bot.Send(msg)
 	if err != nil {
 		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
@@ -280,7 +286,7 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	//		memos[i] = before.(map[string]string)
 	//	}
 	for i := range memos {
-		ret += fmt.Sprintf("%s: *%s*\n", memos[i].Time, memos[i].Content)
+		ret += fmt.Sprintf("%s:  *%s*\n", memos[i].Time, memos[i].Content)
 	}
 	return
 }
