@@ -4,6 +4,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type Memos []struct {
+	time    string
+	content string
+}
+
 //All redis actions
 
 func SetMasterId(id int) {
@@ -46,7 +51,7 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func HGetAllMemos(user string) (ret []string) {
+func HGetAllMemos(user string) *[]Memos {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetMemoLua = `
@@ -57,9 +62,11 @@ func HGetAllMemos(user string) (ret []string) {
   	end
   	return ret
    `
+	memos := []Memos{}
 	script := redis.NewScript(1, multiGetMemoLua)
-	ret, _ = redis.Strings(script.Do(c, user))
-	return
+	values, _ := redis.Values(script.Do(c, user))
+	redis.ScanSlice(values, &memos)
+	return &memos
 }
 
 //

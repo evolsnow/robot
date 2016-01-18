@@ -254,14 +254,14 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	//	beforeParse := conn.HGetAllMemos(user)
 	//	memos := make([]map[string]string, len(beforeParse))
 	memos := conn.HGetAllMemos(user)
-	if len(memos) == 0 {
+	if len(*memos) == 0 {
 		return "You have no memo now, type '/memo' to save one?"
 	}
 	//	for i, before := range beforeParse {
 	//		memos[i] = before.(map[string]string)
 	//	}
-	for time, content := range memos {
-		ret += fmt.Sprintf("%s:%s", time, content.(string))
+	for time, content := range *memos {
+		ret += fmt.Sprintf("%s:%s", time, content)
 	}
 	return
 }
