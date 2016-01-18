@@ -36,10 +36,10 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
-/allalarms -show all of your alarms
-/allmemos - show all of your memos
+/alarms -show all of your alarms
 /evolve	- self evolution of me
 /memo  save a memo
+/memos - show all of your memos
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese

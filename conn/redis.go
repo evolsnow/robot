@@ -98,6 +98,7 @@ func HGetUserTasks(user string) []Task {
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "task:"..data[idx])
+  		print(ret[idx])
   	end
   	return ret
    `
@@ -110,6 +111,7 @@ func HGetUserTasks(user string) []Task {
 	for i := range values {
 		t := new(Task)
 		redis.ScanStruct(values[i].([]interface{}), t)
+		log.Println("task:", *t)
 		tasks = append(tasks, *t)
 	}
 	return tasks
