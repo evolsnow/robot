@@ -10,7 +10,7 @@ import (
 
 var saidGoodBye = make(chan int, 1)
 var userAction = make(map[string]Action) //map[user]Action
-var userTask = make(map[string]*conn.Task)
+var userTask = make(map[string]conn.Task)
 
 type Robot struct {
 	bot     *tgbotapi.BotAPI

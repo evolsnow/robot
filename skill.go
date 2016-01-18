@@ -102,12 +102,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	switch step {
 	case 0:
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		//		tmpTask := userTask[user]
-		//		tmpTask.ChatId = update.Message.Chat.ID
-		//		tmpTask.Owner = update.Message.Chat.UserName
-		//		userTask[user] = tmpTask
-		userTask[user].ChatId = update.Message.Chat.ID
-		userTask[user].Owner = update.Message.Chat.UserName
+		tmpTask := userTask[user]
+		tmpTask.ChatId = update.Message.Chat.ID
+		tmpTask.Owner = user
+		userTask[user] = tmpTask
 
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
@@ -170,30 +168,37 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 				return "wrong format, try '1h2m3s'?"
 			}
 		}
-		//				tmpTask := userTask[user]
-		//				tmpTask.When = redisTime
-		//				userTask[user] = tmpTask
-		go conn.HSetTask(redisTime, userTask[user])
-		go func(rb *Robot, ts *conn.Task) {
-			defer func(ts *conn.Task) {
-				go conn.RemoveTask(ts)
-				delete(userTask, user)
-			}(userTask[user])
-			timer := time.NewTimer(du)
-			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
-			msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
-			msg.ParseMode = "markdown"
-			<-timer.C
-			_, err := rb.bot.Send(msg)
-			if err != nil {
-				rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
-			}
-		}(rb, userTask[user])
+		//save time
+		tmpTask := userTask[user]
+		tmpTask.When = redisTime
+		userTask[user] = tmpTask
 
-		//		delete(userAction, user)
+		go rb.DoTask(user, userTask[user], du)
+
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
+}
+
+func (rb *Robot) DoTask(user string, ts conn.Task, du time.Duration) {
+	defer func(ts conn.Task) {
+		go conn.RemoveTask(ts)
+		delete(userTask, user)
+	}(userTask[user])
+	//save id
+	tmpTask := userTask[user]
+	tmpTask.Id = conn.HSetTask(userTask[user])
+	userTask[user] = tmpTask
+	//set timer
+	timer := time.NewTimer(du)
+	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
+	msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
+	msg.ParseMode = "markdown"
+	<-timer.C
+	_, err := rb.bot.Send(msg)
+	if err != nil {
+		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
+	}
 }
 
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
