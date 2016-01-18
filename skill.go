@@ -133,7 +133,9 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		firstFormat := "1/02 15:04"
 		secondFormat := "15:04"
 		thirdFormat := "15:04:05"
-		var showTime string
+		redisFormat := "1/02 15:04:05" //save to redis format
+		var showTime string            //show to user
+		var redisTime string           //time string to save to redis
 		var scheduledTime time.Time
 		var nowTime = time.Now()
 		var du time.Duration
@@ -142,27 +144,34 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			scheduledTime, err = time.Parse(firstFormat, text)
 			nowTime, _ = time.Parse(firstFormat, nowTime.Format(firstFormat))
 			showTime = scheduledTime.Format(firstFormat)
-			if err != nil { //try to parse with first format
+			redisTime = scheduledTime.Format(redisFormat)
+			//second case
+			if err != nil { //try to parse with second format
 				scheduledTime, err = time.Parse(secondFormat, text)
+				redisTime = nowTime.Format("1/02 ") + scheduledTime.Format(thirdFormat)
 				nowTime, _ = time.Parse(secondFormat, nowTime.Format(secondFormat))
 				showTime = scheduledTime.Format(secondFormat)
+
 				if err != nil {
 					return "wrong format, try '2/14 11:30' or '11:30'?"
 				}
 			}
 			du = scheduledTime.Sub(nowTime)
-		} else {
+		} else { //third case
 
 			du, err = time.ParseDuration(text)
 			scheduledTime = nowTime.Add(du)
 			showTime = scheduledTime.Format(thirdFormat)
+			redisTime = scheduledTime.Format(redisFormat)
+
 			if err != nil {
 				return "wrong format, try '1h2m3s'?"
 			}
 		}
-		//		tmpTask := userTask[user]
-		//		tmpTask.When = scheduledTime
-		//		userTask[user] = tmpTask
+		//				tmpTask := userTask[user]
+		//				tmpTask.When = redisTime
+		//				userTask[user] = tmpTask
+		go conn.HSetTask(user, redisTime, userTask[user].Desc)
 		go func(rb *Robot, ts Task) {
 			timer := time.NewTimer(du)
 			rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)

@@ -30,7 +30,7 @@ type Task struct {
 	ChatId int
 	Owner  string
 	Desc   string
-	//	When   time.Time
+	When   string
 }
 
 func newRobot(token, nickName, webHook string) *Robot {
