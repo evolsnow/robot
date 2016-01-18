@@ -236,7 +236,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 	//find first match case
 	firstId := re.FindSubmatch(body)
 	if len(firstId) == 0 {
-		results <- fmt.Sprintf("o result for *%s* from LBL", movie)
+		results <- fmt.Sprintf("No results for *%s* from LBL", movie)
 		return
 	} else {
 		id = string(firstId[1])
@@ -248,7 +248,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
 		downloads := re.FindAllSubmatch(body, -1)
 		if len(downloads) == 0 {
-			results <- fmt.Sprintf("No result for *%s* from LBL", movie)
+			results <- fmt.Sprintf("No results for *%s* from LBL", movie)
 			return
 		} else {
 			ret := "Results from LBL:\n\n"
@@ -268,7 +268,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	loginZMZ()
 	if downloads := getZMZResource(movie); downloads == nil {
-		results <- fmt.Sprintf("No result for *%s* from ZMZ", movie)
+		results <- fmt.Sprintf("No results for *%s* from ZMZ", movie)
 		return
 	} else {
 		ret := "Results from ZMZ:\n\n"
@@ -291,7 +291,7 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 	loginZMZ()
 	downloads := getZMZResource(show)
 	if downloads == nil {
-		results <- fmt.Sprintf("No result for *%s* from ZMZ", show)
+		results <- fmt.Sprintf("No results for *%s* from ZMZ", show)
 		return
 	}
 	//second parse
@@ -307,7 +307,7 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 			count++
 		}
 		if count == 0 {
-			results <- fmt.Sprintf("No result found for *S%sE%s*", s, e)
+			results <- fmt.Sprintf("No results found for *S%sE%s*", s, e)
 
 		}
 	}
