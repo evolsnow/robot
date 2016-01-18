@@ -167,8 +167,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 
 func restoreTasks(rb *Robot) {
 	tasks := conn.HGetAllTasks()
+	log.Println("未完成数:", len(tasks))
 	for i := range tasks {
-		log.Println("未完成数:", len(tasks))
 		go rb.DoTask(tasks[i])
 	}
 }
