@@ -241,7 +241,7 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, what do you want to save?"
 	case 1:
 		defer delete(userAction, user)
-		time := time.Now.Format("2016-1-02 15:04")
+		time := time.Now().Format("2016-1-02 15:04")
 		memo := update.Message.Text
 		go conn.HSetMemo(time, user, memo)
 		ret = "Ok, type '/allmemos' to see all your memos"
@@ -251,7 +251,11 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 
 func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
-	memos := conn.HGetAllMemos(user)
+	beforeParse := conn.HGetAllMemos(user)
+	memos := make([]map[string]string, len(beforeParse))
+	for i, before := range beforeParse {
+		memos[i] = before.(map[string]string)
+	}
 	for time, content := range memos {
 		ret += fmt.Sprintf("%s:%s", time, content)
 	}
