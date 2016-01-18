@@ -306,10 +306,11 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 			results <- fmt.Sprintf("*ZMZ %s*(%s)\n```%s```\n\n", name, size, link)
 			count++
 		}
-		if count == 0 {
-			results <- fmt.Sprintf("No results found for *S%sE%s*", s, e)
 
-		}
+	}
+	if count == 0 {
+		results <- fmt.Sprintf("No results found for *S%sE%s*", s, e)
+
 	}
 	return
 }
