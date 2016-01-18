@@ -215,20 +215,15 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		userAction[user] = tmpAction
 		ret = "Ok, which American show do you want to download?"
 	case 1:
-		defer func() {
-			delete(userAction, user)
-			results <- "done"
-		}()
 		results <- "Searching American show..."
 		info := strings.Split(update.Message.Text, " ")
 		if len(info) < 3 {
 			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
-			tmpAction := userAction[user]
-			tmpAction.ActionStep = 1
-			userAction[user] = tmpAction
 			return
 		}
 		GetShowFromZMZ(info[0], info[1], info[2], results)
+		delete(userAction, user)
+		results <- "done"
 	}
 	return
 }
