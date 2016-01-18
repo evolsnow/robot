@@ -221,6 +221,10 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		}()
 		results <- "Searching American show..."
 		info := strings.Split(update.Message.Text, " ")
+		if len(info) < 3 {
+			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
+			return
+		}
 		GetShowFromZMZ(info[0], info[1], info[2], results)
 	}
 	return
@@ -306,7 +310,6 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 			results <- fmt.Sprintf("*ZMZ %s*(%s)\n```%s```\n\n", name, size, link)
 			count++
 		}
-
 	}
 	if count == 0 {
 		results <- fmt.Sprintf("No results found for *S%sE%s*", s, e)
