@@ -49,6 +49,7 @@ func (rb *Robot) run() {
 	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
 	rb.bot.Send(msg)
 	//go loginZMZ()
+	go restoreTasks(rb)
 	for update := range rb.updates {
 		go handlerUpdate(rb, update)
 	}
@@ -161,5 +162,12 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
+	}
+}
+
+func restoreTasks(rb *Robot) {
+	tasks := conn.HGetAllTasks()
+	for i := range tasks {
+		go rb.DoTask(tasks[i])
 	}
 }

@@ -212,7 +212,7 @@ func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 		return "You have no alarm now, type '/alarm' to set one?"
 	}
 	for i := range tasks {
-		ret += fmt.Sprintf("%s:  *%s*\n", tasks[i].Desc, tasks[i].When)
+		ret += fmt.Sprintf("%s:  %s\n", tasks[i].When, tasks[i].Desc)
 	}
 	return
 }

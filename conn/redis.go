@@ -72,6 +72,7 @@ func HSetTask(ts Task) {
 	defer c.Close()
 	log.Println("save task")
 	var setTaskLua = `
+	redis.call("RPUSH", "allTasks", KEYS[1])
 	redis.call("RPUSH", KEYS[2]..":tasks", KEYS[1])
 	redis.call("HMSET", "task:"..KEYS[1], "owner", KEYS[2], "time", KEYS[3], "content", KEYS[4], "chatID", KEYS[5])
 	`
@@ -99,7 +100,6 @@ func HGetUserTasks(user string) []Task {
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "task:"..data[idx])
-  		print(ret[idx])
   	end
   	return ret
    `
@@ -112,10 +112,35 @@ func HGetUserTasks(user string) []Task {
 	for i := range values {
 		t := new(Task)
 		redis.ScanStruct(values[i].([]interface{}), t)
-		log.Println("task:", *t)
 		tasks = append(tasks, *t)
 	}
 	return tasks
+}
+
+func HGetAllTasks() []Task {
+	c := Pool.Get()
+	defer c.Close()
+	var GetAllTasksLua = `
+	local data = redis.call("LRANGE", "allTasks", "0", "-1")
+	local ret = {}
+  	for idx=1, #data do
+  		ret[idx] = redis.call("HGETALL", "task:"..data[idx])
+  	end
+  	return ret
+   `
+	var tasks []Task
+	script := redis.NewScript(0, GetAllTasksLua)
+	values, err := redis.Values(script.Do(c))
+	if err != nil {
+		log.Println(err)
+	}
+	for i := range values {
+		t := new(Task)
+		redis.ScanStruct(values[i].([]interface{}), t)
+		tasks = append(tasks, *t)
+	}
+	return tasks
+
 }
 
 func HGetAllMemos(user string) []Memo {
