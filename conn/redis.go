@@ -69,7 +69,7 @@ func HSetTask(ts Task) int {
 	redis.call("HMSET", "task:"..id, "time", KEYS[2], "content", KEYS[3], "chatID", KEYS[4])
 	return id
 	`
-	script := redis.NewScript(3, setTaskLua)
+	script := redis.NewScript(4, setTaskLua)
 	id, _ := redis.Int(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
 	return id
 }
