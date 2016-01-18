@@ -4,9 +4,9 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-type Memos []struct {
-	time    string
-	content string
+type Memos struct {
+	Time    string
+	Content string
 }
 
 //All redis actions

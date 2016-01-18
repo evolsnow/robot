@@ -260,8 +260,8 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	//	for i, before := range beforeParse {
 	//		memos[i] = before.(map[string]string)
 	//	}
-	for time, content := range *memos {
-		ret += fmt.Sprintf("%s:%s", time, content)
+	for i := range *memos {
+		ret += fmt.Sprintf("%s:%s", (*memos)[i].Time, (*memos)[i].Content)
 	}
 	return
 }
