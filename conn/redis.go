@@ -94,10 +94,12 @@ func HGetUserTasks(user string) []Task {
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
-  		ret[idx].insert("id",data[idx])
+  		print ret[idx]
   	end
   	return ret
    `
+	//  		ret[idx].insert("id", data[idx])
+
 	var tasks []Task
 	script := redis.NewScript(1, multiGetTaskLua)
 	values, err := redis.Values(script.Do(c, user))
