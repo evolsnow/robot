@@ -71,6 +71,7 @@ func HSetTask(ts Task) int {
 	`
 	script := redis.NewScript(4, setTaskLua)
 	id, _ := redis.Int(script.Do(c, ts.Owner, ts.When, ts.Desc, ts.ChatId))
+	log.Println(id)
 	return id
 }
 
@@ -83,9 +84,7 @@ func RemoveTask(ts Task) {
 	redis.call("DEL", "task:"..KEYS[2])
 	`
 	script := redis.NewScript(2, removeTaskLua)
-	if _, err := script.Do(c, ts.Owner, ts.Id); err != nil {
-		log.Println(err)
-	}
+	script.Do(c, ts.Owner, ts.Id)
 }
 
 func HGetAllMemos(user string) []Memo {
