@@ -189,11 +189,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 func (rb *Robot) DoTask(ts conn.Task) {
 	defer conn.RemoveTask(ts)
 	ts.Id = conn.HSetTask(ts)
-	now := time.Now()
+	nowString := time.Now().Format(RedisFormat)
+	now, _ := time.Parse(RedisFormat, nowString)
 	when, _ := time.Parse(RedisFormat, ts.When)
-	log.Println(now)
-	log.Println(when)
-	if when.Before(now) {
+	if when.After(now) {
 		log.Println("after")
 		//set timer
 		du := when.Sub(now)
@@ -207,6 +206,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	if err != nil {
 		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 	}
+	log.Println(ts.Id)
 }
 
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
