@@ -116,9 +116,9 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.Start(update)
 		case "/help":
 			rawMsg = rb.Help(update)
-		case "/allalarms":
+		case "/showalarms":
 			rawMsg = rb.GetTasks(update)
-		case "/allmemos":
+		case "/showmemos":
 			rawMsg = rb.GetAllMemos(update)
 		case "/trans":
 			rawMsg = rb.Translate(update)

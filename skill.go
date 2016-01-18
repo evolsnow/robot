@@ -175,7 +175,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		tmpTask := userTask[user]
 		tmpTask.When = redisTime
 		userTask[user] = tmpTask
-
+		go conn.HSetTask(&userTask[user])
 		go rb.DoTask(userTask[user])
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
@@ -183,7 +183,6 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 }
 
 func (rb *Robot) DoTask(ts conn.Task) {
-	conn.HSetTask(&ts)
 	nowString := time.Now().Format(RedisFormat)
 	now, _ := time.Parse(RedisFormat, nowString)
 	when, _ := time.Parse(RedisFormat, ts.When)
