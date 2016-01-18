@@ -182,7 +182,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 
 func (rb *Robot) DoTask(user string, ts conn.Task, du time.Duration) {
 	defer func(ts conn.Task) {
-
+		conn.RemoveTask(userTask[user])
 		delete(userTask, user)
 	}(userTask[user])
 	//save id
@@ -199,8 +199,6 @@ func (rb *Robot) DoTask(user string, ts conn.Task, du time.Duration) {
 	if err != nil {
 		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
 	}
-	log.Println(userTask[user].Id)
-	conn.RemoveTask(ts)
 }
 
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
