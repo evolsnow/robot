@@ -102,10 +102,12 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	switch step {
 	case 0:
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpTask := userTask[user]
-		tmpTask.ChatId = update.Message.Chat.ID
-		tmpTask.Owner = update.Message.Chat.UserName
-		userTask[user] = tmpTask
+		//		tmpTask := userTask[user]
+		//		tmpTask.ChatId = update.Message.Chat.ID
+		//		tmpTask.Owner = update.Message.Chat.UserName
+		//		userTask[user] = tmpTask
+		userTask[user].ChatId = update.Message.Chat.ID
+		userTask[user].Owner = update.Message.Chat.UserName
 
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
