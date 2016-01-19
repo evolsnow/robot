@@ -45,22 +45,17 @@ func newRobot(token, nickName, webHook string) *Robot {
 }
 
 func (rb *Robot) run() {
-	chatId := conn.GetMasterId()
+	chatId := conn.ReadMasterId()
 	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
 	rb.bot.Send(msg)
 	//go loginZMZ()
+	//reload tasks from redis
 	go restoreTasks(rb)
 	for update := range rb.updates {
 		go handlerUpdate(rb, update)
 	}
 }
-func (rb *Robot) Reply(update tgbotapi.Update, rawMsg string) (err error) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
-	msg.ParseMode = "markdown"
-	log.Printf(rawMsg)
-	_, err = rb.bot.Send(msg)
-	return
-}
+
 func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -145,7 +140,7 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.DownloadShow(update, 0, nil)
 		case "/evolve":
 			rawMsg = "upgrading..."
-			go conn.SetMasterId(chatId)
+			go conn.CreateMasterId(chatId)
 			go rb.Evolve(update)
 		default:
 			rawMsg = "unknow command, type /help?"
@@ -166,8 +161,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 }
 
 func restoreTasks(rb *Robot) {
-	tasks := conn.HGetAllTasks()
-	log.Println("未完成数:", len(tasks))
+	tasks := conn.ReadAllTasks()
+	log.Println("unfinished tasks:", len(tasks))
 	for i := range tasks {
 		go rb.DoTask(tasks[i])
 	}

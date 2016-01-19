@@ -27,9 +27,19 @@ const (
 //zmz.tv needs to login before downloading
 var zmzClient http.Client
 
+//encapsulated robot message send action
+func (rb *Robot) Reply(update tgbotapi.Update, rawMsg string) (err error) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
+	msg.ParseMode = "markdown"
+	log.Printf(rawMsg)
+	_, err = rb.bot.Send(msg)
+	return
+}
+
+// '/start'
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
-	go conn.SetUserChatId(user, update.Message.Chat.ID)
+	go conn.CreateUserChatId(user, update.Message.Chat.ID)
 	return "welcome: " + user
 }
 
@@ -48,6 +58,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
+//remote execute self evolve script, exit the robot
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
 		rb.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "sorry, unauthorized"))
@@ -62,12 +73,12 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 
 func (rb *Robot) Translate(update tgbotapi.Update) string {
 	var info string
-	if string(update.Message.Text[0]) == "/" {
-		raw := strings.SplitAfterN(update.Message.Text, " ", 2)
+	if string(update.Message.Text[0]) == "/" { //'trans cat'
+		raw := strings.SplitAfterN(update.Message.Text, " ", 2) //at most 2 substring
 		if len(raw) < 2 {
 			return "what do you want to translate, try '/trans cat'?"
 		} else {
-			info = "翻译" + raw[1]
+			info = "翻译" + raw[1] //'翻译cat'
 		}
 	} else {
 		info = update.Message.Text
@@ -76,6 +87,7 @@ func (rb *Robot) Translate(update tgbotapi.Update) string {
 	return qinAI(info)
 
 }
+
 func (rb *Robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	if strings.Contains(info, rb.name) {
@@ -102,7 +114,6 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 	} else { //jarvis use another AI
 		return qinAI(info)
 	}
-	//	return response
 }
 
 func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
@@ -120,7 +131,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		userAction[user] = tmpAction
 		return "Ok, what should I remind you to do?"
 	case 1:
-		//save thing
+		//save task content
 		tmpTask := userTask[user]
 		tmpTask.Desc = update.Message.Text
 		userTask[user] = tmpTask
@@ -134,8 +145,8 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			"'*11:30*' means  11:30 today\n" + //second format
 			"'*5m10s*' means 5 minutes 10 seconds later" //third format
 	case 2:
-		defer delete(userAction, user)
-		//save time duration
+		defer delete(userAction, user) //delete userAction, prevent to be stuck
+		//format time
 		text := update.Message.Text
 		text = strings.Replace(text, "：", ":", -1)
 		var showTime string  //show to user
@@ -144,7 +155,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		var nowTime = time.Now()
 		var du time.Duration
 		var err error
-		if strings.Contains(text, ":") {
+		if strings.Contains(text, ":") { //first and second case
 			scheduledTime, err = time.Parse(FirstFormat, text)
 			//			nowTime, _ = time.Parse(FirstFormat, nowTime.Format(FirstFormat))
 			showTime = scheduledTime.Format(FirstFormat)
@@ -161,12 +172,10 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 				}
 			}
 		} else { //third case
-
 			du, err = time.ParseDuration(text)
 			scheduledTime = nowTime.Add(du)
 			showTime = scheduledTime.Format(ThirdFormat)
 			redisTime = scheduledTime.Format(RedisFormat)
-
 			if err != nil {
 				return "wrong format, try '1h2m3s'?"
 			}
@@ -174,11 +183,12 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		//save time
 		tmpTask := userTask[user]
 		tmpTask.When = redisTime
-		tmpTask.Id = conn.GetTaskId()
+		tmpTask.Id = conn.UpdateTaskId() //get auto-increased id from redis before pass the struct
 		userTask[user] = tmpTask
-
+		//arrange to do the task
 		go rb.DoTask(userTask[user])
-		go conn.HSetTask(userTask[user])
+		//save task in redis
+		go conn.CreateTask(userTask[user])
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
@@ -194,19 +204,23 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		timer := time.NewTimer(du)
 		<-timer.C
 	}
+	//else if now is after when means we miss the time to do the task, so do it immediately
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
 	msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
 	msg.ParseMode = "markdown"
 	_, err := rb.bot.Send(msg)
-	if err != nil {
-		rb.bot.Send(tgbotapi.NewMessage(conn.GetUserChatId(ts.Owner), rawMsg))
+	if err != nil { //if failed to send with the given chatId, load it from redis
+		rb.bot.Send(tgbotapi.NewMessage(conn.ReadUserChatId(ts.Owner), rawMsg))
 	}
+	//delete the task from redis, we won't save it
 	conn.RemoveTask(ts)
 }
 
+//get the given  user's all tasks
+//'/alarms' command
 func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
-	tasks := conn.HGetUserTasks(user)
+	tasks := conn.ReadUserTasks(user)
 	if len(tasks) == 0 {
 		return "You have no alarm now, type '/alarm' to set one?"
 	}
@@ -216,6 +230,7 @@ func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	return
 }
 
+//download from lbl and zmz
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
@@ -241,6 +256,7 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	return
 }
 
+//download American show from zmz
 func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan string) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
@@ -277,7 +293,7 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 		defer delete(userAction, user)
 		time := time.Now().Format("2006-1-02 15:04")
 		memo := update.Message.Text
-		go conn.HSetMemo(user, time, memo)
+		go conn.CreateMemo(user, time, memo)
 		ret = "Ok, type '/allmemos' to see all your memos"
 	}
 	return
@@ -285,15 +301,10 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 
 func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
-	//	beforeParse := conn.HGetAllMemos(user)
-	//	memos := make([]map[string]string, len(beforeParse))
-	memos := conn.HGetAllMemos(user)
+	memos := conn.ReadAllMemos(user)
 	if len(memos) == 0 {
 		return "You have no memo now, type '/memo' to save one?"
 	}
-	//	for i, before := range beforeParse {
-	//		memos[i] = before.(map[string]string)
-	//	}
 	for i := range memos {
 		ret += fmt.Sprintf("%d. %s:  *%s*\n", i+1, memos[i].Time, memos[i].Content)
 	}
@@ -328,6 +339,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 			ret := "Results from LBL:\n\n"
 			for i := range downloads {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
+				//when results are too large, we split it.
 				if i%5 == 0 && i > 0 {
 					results <- ret
 					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/5+1)
@@ -388,6 +400,7 @@ func GetShowFromZMZ(show, s, e string, results chan string) {
 	return
 }
 
+//get show and get movie from zmz both uses this function
 func getZMZResource(name string) [][][]byte {
 	id := getZMZResourceId(name)
 	if id == "" {
@@ -400,8 +413,6 @@ func getZMZResource(name string) [][][]byte {
 	re, _ := regexp.Compile(`<li class="clearfix".*?<input type="checkbox"><a title="(.*?)".*?<font class="f3">(.*?)</font>.*?<a href="(.*?)" type="ed2k">`)
 	body, _ := ioutil.ReadAll(resp.Body)
 	body = []byte(strings.Replace(string(body), "\n", "", -1))
-	//	tmp := (strings.Replace(string(body), "</div>\n", "", -1))
-	//	body = []byte(strings.Replace(tmp, "<div class=\"fr\">\n", "", -1))
 	downloads := re.FindAllSubmatch(body, -1)
 	if len(downloads) == 0 {
 		return nil
@@ -426,11 +437,13 @@ func getZMZResourceId(name string) (id string) {
 	}
 }
 
+//login zmz first before zmz don't allow login at different browsers, but I have two robots...
 func loginZMZ() {
 	gCookieJar, _ := cookiejar.New(nil)
 	zmzURL := "http://www.zimuzu.tv/User/Login/ajaxLogin"
 	zmzClient = http.Client{
 		Jar: gCookieJar,
 	}
+	//post with my public account
 	zmzClient.PostForm(zmzURL, url.Values{"account": {"evol4snow"}, "password": {"104545"}, "remember": {"0"}})
 }

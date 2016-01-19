@@ -18,29 +18,29 @@ type Task struct {
 	When   string `redis:"time"`
 }
 
-//All redis actions
+//All redis CRUD actions
 
-func SetMasterId(id int) {
+func CreateMasterId(id int) {
 	c := Pool.Get()
 	defer c.Close()
 	c.Do("SET", "evolsnowChatId", id)
 }
 
-func GetMasterId() int {
+func ReadMasterId() int {
 	c := Pool.Get()
 	defer c.Close()
 	id, _ := redis.Int(c.Do("GET", "evolsnowChatId"))
 	return id
 }
 
-func SetUserChatId(user string, id int) {
+func CreateUserChatId(user string, id int) {
 	c := Pool.Get()
 	defer c.Close()
 	key := user + "ChatId"
 	c.Do("SET", key, id)
 }
 
-func GetUserChatId(user string) int {
+func ReadUserChatId(user string) int {
 	c := Pool.Get()
 	defer c.Close()
 	key := user + "ChatId"
@@ -48,7 +48,7 @@ func GetUserChatId(user string) int {
 	return id
 }
 
-func HSetMemo(user, time, memo string) {
+func CreateMemo(user, time, memo string) {
 	c := Pool.Get()
 	defer c.Close()
 	var setMemoLua = `
@@ -60,14 +60,14 @@ func HSetMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func GetTaskId() int {
+func UpdateTaskId() int {
 	c := Pool.Get()
 	defer c.Close()
 	id, _ := redis.Int(c.Do("INCR", "taskIncrId"))
 	return id
 }
 
-func HSetTask(ts Task) {
+func CreateTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
 	log.Println("save task")
@@ -93,7 +93,7 @@ func RemoveTask(ts Task) {
 	script.Do(c, ts.Owner, ts.Id)
 }
 
-func HGetUserTasks(user string) []Task {
+func ReadUserTasks(user string) []Task {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetTaskLua = `
@@ -118,7 +118,7 @@ func HGetUserTasks(user string) []Task {
 	return tasks
 }
 
-func HGetAllTasks() []Task {
+func ReadAllTasks() []Task {
 	c := Pool.Get()
 	defer c.Close()
 	var GetAllTasksLua = `
@@ -144,7 +144,7 @@ func HGetAllTasks() []Task {
 
 }
 
-func HGetAllMemos(user string) []Memo {
+func ReadAllMemos(user string) []Memo {
 	c := Pool.Get()
 	defer c.Close()
 	var multiGetMemoLua = `
@@ -168,6 +168,3 @@ func HGetAllMemos(user string) []Memo {
 	}
 	return memos
 }
-
-//
-//var multiGetScript = redis.NewScript(0, multiGetMemoLua)
