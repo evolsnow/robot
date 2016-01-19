@@ -13,10 +13,9 @@ var userAction = make(map[string]Action) //map[user]Action
 var userTask = make(map[string]conn.Task)
 
 type Robot struct {
-	bot     *tgbotapi.BotAPI
-	updates <-chan tgbotapi.Update
-	shutUp  bool
-	//	language []string
+	bot      *tgbotapi.BotAPI
+	updates  <-chan tgbotapi.Update
+	shutUp   bool   //shut up the robot
 	name     string //name from telegram
 	nickName string //user defined name
 }
@@ -33,8 +32,8 @@ func newRobot(token, nickName, webHook string) *Robot {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rb.name = rb.bot.Self.UserName
-	rb.nickName = nickName
+	rb.name = rb.bot.Self.UserName //name from telegram
+	rb.nickName = nickName         //name from yourself
 	log.Printf("%s: Authorized on account %s", rb.nickName, rb.name)
 	_, err = rb.bot.SetWebhook(tgbotapi.NewWebhook(webHook + rb.bot.Token))
 	if err != nil {
@@ -46,8 +45,10 @@ func newRobot(token, nickName, webHook string) *Robot {
 
 func (rb *Robot) run() {
 	chatId := conn.ReadMasterId()
-	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
-	rb.bot.Send(msg)
+	rawMsg := fmt.Sprintf("%s is coming back!", rb.nickName)
+	rb.Reply(chatId, rawMsg)
+	//	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
+	//	rb.bot.Send(msg)
 	//go loginZMZ()
 	//reload tasks from redis
 	go restoreTasks(rb)

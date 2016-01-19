@@ -28,8 +28,15 @@ const (
 var zmzClient http.Client
 
 //encapsulated robot message send action
-func (rb *Robot) Reply(update tgbotapi.Update, rawMsg string) (err error) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, rawMsg)
+func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
+	var chatId int
+	switch v.(Type) {
+	case tgbotapi.Update:
+		chatId = v.(tgbotapi.Update).Message.Chat.ID
+	case int:
+		chatId = v.(int)
+	}
+	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"
 	log.Printf(rawMsg)
 	_, err = rb.bot.Send(msg)

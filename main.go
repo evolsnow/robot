@@ -26,16 +26,18 @@ func main() {
 	if err != nil {
 		log.Fatal("a vailid json config file must exist")
 	}
-
+	//connect to redis
 	redisPort := strconv.Itoa(config.RedisPort)
 	redisServer := net.JoinHostPort(config.RedisAddress, redisPort)
 	if !conn.Ping(redisServer, config.RedisPassword) {
 		log.Fatal("connect to redis server failed")
 	}
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
+	//create robot and run
 	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
 	robot.bot.Debug = debug
 	go robot.run()
+	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
@@ -62,6 +64,7 @@ func socketHandler(ws *websocket.Conn) {
 		websocket.Message.Send(ws, "")
 	}
 }
+
 func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
@@ -81,6 +84,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//receive from client
 func receive(in string) (ret []string) {
 	fmt.Printf("Received: %s\n", in)
 	var response string
