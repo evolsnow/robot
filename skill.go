@@ -68,7 +68,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 //remote execute self evolve script, exit the robot
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
-		rb.bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "sorry, unauthorized"))
+		rb.Reply(update, "sorry, unauthorized")
 		return
 	}
 	<-saidGoodBye
@@ -213,11 +213,9 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	}
 	//else if now is after when means we miss the time to do the task, so do it immediately
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
-	msg := tgbotapi.NewMessage(ts.ChatId, rawMsg)
-	msg.ParseMode = "markdown"
-	_, err := rb.bot.Send(msg)
+	_, err := rb.Reply(ts.ChatId, rawMsg)
 	if err != nil { //if failed to send with the given chatId, load it from redis
-		rb.bot.Send(tgbotapi.NewMessage(conn.ReadUserChatId(ts.Owner), rawMsg))
+		rb.Reply(conn.ReadUserChatId(ts.Owner), rawMsg)
 	}
 	//delete the task from redis, we won't save it
 	conn.RemoveTask(ts)
