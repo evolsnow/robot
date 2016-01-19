@@ -53,9 +53,9 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
-/alarms -show all of your alarms
+/alarms - show all of your alarms
 /evolve	- self evolution of me
-/memo  save a memo
+/memo - save a memo
 /memos - show all of your memos
 /movie - find movie download links
 /show - find American show download links
