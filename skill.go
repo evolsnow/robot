@@ -30,7 +30,7 @@ var zmzClient http.Client
 //encapsulated robot message send action
 func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
 	var chatId int
-	switch v.(Type) {
+	switch v.(type) {
 	case tgbotapi.Update:
 		chatId = v.(tgbotapi.Update).Message.Chat.ID
 	case int:
