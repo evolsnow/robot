@@ -345,8 +345,8 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
 				//when results are too large, we split it.
 				if i%5 == 0 && i > 0 {
+					results <- fmt.Sprintf("*LBL Part %d*\n\n", i/5+1)
 					results <- ret
-					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/5+1)
 				}
 			}
 			results <- ret
@@ -368,8 +368,8 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 			link := string(downloads[i][3])
 			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
 			if i%5 == 0 && i > 0 {
+				results <- fmt.Sprintf("*ZMZ Part %d*\n\n", i/5+1)
 				results <- ret
-				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/5+1)
 			}
 		}
 		results <- ret
