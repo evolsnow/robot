@@ -47,7 +47,7 @@ func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
 	go conn.CreateUserChatId(user, update.Message.Chat.ID)
-	return "welcome: " + user
+	return fmt.Sprintf("welcome: %s.\nType '/help' see what can I do.", user)
 }
 
 func (rb *Robot) Help(update tgbotapi.Update) string {
