@@ -213,8 +213,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	}
 	//else if now is after when means we miss the time to do the task, so do it immediately
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
-	_, err := rb.Reply(ts.ChatId, rawMsg)
-	if err != nil { //if failed to send with the given chatId, load it from redis
+	if rb.Reply(ts.ChatId, rawMsg) != nil { //if failed to send with the given chatId, load it from redis
 		rb.Reply(conn.ReadUserChatId(ts.Owner), rawMsg)
 	}
 	//delete the task from redis, we won't save it
