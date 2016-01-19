@@ -59,6 +59,18 @@ input, input[placeholder] {
     font-size: 4em;
 }
 
+#bar {
+    position: absolute;
+    bottom: 10px;
+    /*right: 16px;*/
+    width: 100%;
+    /*height: 20px;*/
+    text-align: center;
+    /*background: #ccc;*/
+    z-index: 2;
+    overflow: hidden;
+}
+
 #userText.hidden {
     display: none;
 }
