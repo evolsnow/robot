@@ -217,7 +217,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		rb.Reply(conn.ReadUserChatId(ts.Owner), rawMsg)
 	}
 	//delete the task from redis, we won't save it
-	conn.RemoveTask(ts)
+	conn.DeleteTask(ts)
 }
 
 //get the given  user's all tasks

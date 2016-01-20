@@ -80,7 +80,7 @@ func CreateTask(ts Task) {
 	script.Do(c, ts.Id, ts.Owner, ts.When, ts.Desc, ts.ChatId)
 }
 
-func RemoveTask(ts Task) {
+func DeleteTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
 	log.Println("remove", ts.Id)
