@@ -136,12 +136,12 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			tmpAction.ActionName = "saveMemo"
 			userAction[user] = tmpAction
 			rawMsg = rb.SaveMemo(update, 0)
-		case "/removememo":
+		case "/rmmemo":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "removeMemo"
 			userAction[user] = tmpAction
 			rawMsg = rb.RemoveMemo(update, 0)
-		case "/removealarm":
+		case "/rmalarm":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "removeReminder"
 			userAction[user] = tmpAction

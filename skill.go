@@ -57,11 +57,11 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
 /alarms - show all of your alarms
-/removealarm - remove alarm(s)
+/rmalarm - remove alarm(s)
 /evolve	- self evolution of me
 /memo - save a memo
 /memos - show all of your memos
-/removememo - remove memo(s)
+/rmmemo - remove memo(s)
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
@@ -214,6 +214,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		//set timer
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
+		log.Println("mission id:", abortTask[ts.Id])
 		for {
 			select {
 			case <-abortTask[ts.Id]:
@@ -265,6 +266,8 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 		userTaskIds[user] = make([]int, len(tasks))
 		for i := range tasks {
 			userTaskIds[user] = append(userTaskIds[user], tasks[i].Id)
+			log.Println(tasks[i].Id)
+			log.Println(userTaskIds[user][i])
 			ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
 		}
 	case 1:
