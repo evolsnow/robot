@@ -87,6 +87,8 @@ var chatWebsocket = function() {
 			$State.text.addClass('talk');
 			//var hrWidth;
 			document.getElementById("msg").innerHTML = event.data;
+			document.getElementById("userText").value = "";
+
 			console.log(event.data)
 			if ($State.text.textWidth() < 1) {
 				hrWidth = 80;
