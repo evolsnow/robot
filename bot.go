@@ -100,7 +100,6 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 					}
 					rb.Reply(update, msg)
 				}
-
 			}
 		}
 	} else if string([]rune(text)[:2]) == "翻译" {

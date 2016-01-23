@@ -18,14 +18,15 @@ var messages = make(chan string)
 func main() {
 	var configFile string
 	var debug bool
+
 	flag.StringVar(&configFile, "c", "config.json", "specify config file")
 	flag.BoolVar(&debug, "d", false, "debug mode")
-
 	flag.Parse()
 	config, err := ParseConfig(configFile)
 	if err != nil {
 		log.Fatal("a vailid json config file must exist")
 	}
+
 	//connect to redis
 	redisPort := strconv.Itoa(config.RedisPort)
 	redisServer := net.JoinHostPort(config.RedisAddress, redisPort)
@@ -33,15 +34,16 @@ func main() {
 		log.Fatal("connect to redis server failed")
 	}
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
+
 	//create robot and run
 	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
 	robot.bot.Debug = debug
 	go robot.run()
+
 	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
-	//	log.Fatal(http.ListenAndServe(net.JoinHostPort(config.Server, srvPort), nil))
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
 
 }
@@ -65,6 +67,7 @@ func socketHandler(ws *websocket.Conn) {
 	}
 }
 
+//when webSocket unavailable, fallback to ajax long polling
 func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {

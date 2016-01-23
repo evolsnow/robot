@@ -237,7 +237,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 }
 
 //get the given  user's all tasks
-//'/alarms' command
+//'alarms' command
 func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
 	tasks := conn.ReadUserTasks(user)
@@ -255,9 +255,11 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	switch step {
 	case 0:
 		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		//		tmpAction := userAction[user]
+		//		tmpAction.ActionStep++
+		//		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		tasks := conn.ReadUserTasks(user)
 		if len(tasks) == 0 {
 			delete(userAction, user)
@@ -291,10 +293,8 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		ret = "Ok, which movie do you want to download?"
 	case 1:
 		defer func() {
@@ -317,10 +317,8 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		ret = "Ok, which American show do you want to download?"
 	case 1:
 		results <- "Searching American show..."
@@ -340,10 +338,8 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		ret = "Ok, what do you want to save?"
 	case 1:
 		defer delete(userAction, user)
@@ -371,10 +367,8 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		ret = "Ok, which memo do you want to remove?(type id)\n" + rb.GetAllMemos(update)
 	case 1:
 		defer delete(userAction, user)
