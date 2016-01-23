@@ -61,7 +61,7 @@ func CreateMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func DeleteMemo(user string, memos []string) {
+func DeleteMemos(user string, memos []string) {
 	c := Pool.Get()
 	defer c.Close()
 	var deleteMemoLua = `

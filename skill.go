@@ -370,11 +370,9 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, which memo(s) do you want to remove?\n" + rb.GetAllMemos(update)
 	case 1:
 		defer delete(userAction, user)
-		memos, err := strings.Split(update.Message.Text, " ")
-		if err != nil {
-			log.Println(err)
-		}
-		go conn.DeleteMemo(user, memos)
+		log.Println(update.Message.Text)
+		memos := strings.Split(update.Message.Text, " ")
+		go conn.DeleteMemos(user, memos)
 		ret = "Ok, type '/memos' to see your new memos"
 	}
 	return
