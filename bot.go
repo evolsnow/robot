@@ -74,6 +74,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.SaveMemo(update, action.ActionStep)
 		case "removeMemo":
 			rawMsg = rb.RemoveMemo(update, action.ActionStep)
+		case "removeReminder":
+			rawMsg = rb.RemoveReminder(update, action.ActionStep)
 		case "downloadMovie":
 			results := make(chan string, 2)
 			go rb.DownloadMovie(update, action.ActionStep, results)
@@ -139,6 +141,11 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			tmpAction.ActionName = "removeMemo"
 			userAction[user] = tmpAction
 			rawMsg = rb.RemoveMemo(update, 0)
+		case "/removealarm":
+			tmpAction := userAction[user]
+			tmpAction.ActionName = "removeReminder"
+			userAction[user] = tmpAction
+			rawMsg = rb.RemoveReminder(update, 0)
 		case "/show":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "downloadShow"
