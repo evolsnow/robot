@@ -60,6 +60,20 @@ func CreateMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
+func DeleteMemo(user string, memos []string) {
+	c := Pool.Get()
+	defer c.Close()
+	var deleteMemoLua = `
+	local id = redis.call("LINDEX", KEYS[1]..":memos")
+	redis.call("LREM", KEYS[1]..":memos", 1, id)
+	redis.call("DEL", "memo:"..elem)
+	`
+	script := redis.NewScript(1, deleteMemoLua)
+	for i := range memos {
+		script.Do(c, user, memos[i])
+	}
+}
+
 func UpdateTaskId() int {
 	c := Pool.Get()
 	defer c.Close()

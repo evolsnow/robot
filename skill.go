@@ -57,6 +57,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 /evolve	- self evolution of me
 /memo - save a memo
 /memos - show all of your memos
+/removememo - remove memo(s)
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
@@ -220,6 +221,10 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	conn.DeleteTask(ts)
 }
 
+func (rb *Robot) RemoveReminder(update tgbotapi.Update) (ret string) {
+
+}
+
 //get the given  user's all tasks
 //'/alarms' command
 func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
@@ -311,6 +316,24 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	}
 	for i := range memos {
 		ret += fmt.Sprintf("%d. %s:  *%s*\n", i+1, memos[i].Time, memos[i].Content)
+	}
+	return
+}
+
+func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
+	user := update.Message.Chat.UserName
+	switch step {
+	case 0:
+		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		ret = "Ok, which memo(s) do you want to remove?\n" + rb.ReadAllMemos(update)
+	case 1:
+		defer delete(userAction, user)
+		memos := strings.Split(update.Message.Text, " ")
+		go conn.DeleteMemo(user, memos)
+		ret = "Ok, type '/memos' to see your new memos"
 	}
 	return
 }

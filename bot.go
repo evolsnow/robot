@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -47,8 +48,6 @@ func (rb *Robot) run() {
 	chatId := conn.ReadMasterId()
 	rawMsg := fmt.Sprintf("%s is coming back!", rb.nickName)
 	rb.Reply(chatId, rawMsg)
-	//	msg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s is coming back!", rb.nickName))
-	//	rb.bot.Send(msg)
 	//go loginZMZ()
 	//reload tasks from redis
 	go restoreTasks(rb)
@@ -74,6 +73,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = rb.SetReminder(update, action.ActionStep)
 		case "saveMemo":
 			rawMsg = rb.SaveMemo(update, action.ActionStep)
+		case "removeMemo":
+			rawMsg = rb.RemoveMemo(update, action.ActionStep)
 		case "downloadMovie":
 			results := make(chan string, 2)
 			go rb.DownloadMovie(update, action.ActionStep, results)
@@ -134,6 +135,11 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			tmpAction.ActionName = "saveMemo"
 			userAction[user] = tmpAction
 			rawMsg = rb.SaveMemo(update, 0)
+		case "/removememo":
+			tmpAction := userAction[user]
+			tmpAction.ActionName = "removeMemo"
+			userAction[user] = tmpAction
+			rawMsg = rb.RemoveMemo(update, 0)
 		case "/show":
 			tmpAction := userAction[user]
 			tmpAction.ActionName = "downloadShow"
