@@ -48,8 +48,10 @@ func qinAI(info string) string {
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
 	log.Printf("reply from qingyunke machine: %s", reply.Content)
-	ret := strings.Replace(reply.Content, "{br}", "\n", -1)
-	return strings.Replace(ret, "菲菲", "Jarvis", -1)
+	wl := []string{"{br}", "\n", "菲菲", "Jarvis"}
+	srp := strings.NewReplacer(wl...)
+	ret := srp.Replace(reply.Content)
+	return ret
 }
 
 type qinReply struct {
@@ -72,11 +74,9 @@ func mitAI(info string) string {
 	}
 	found := (string(all[1]))
 	log.Printf("reply from mitsuku machine: %s", found)
-	ret := strings.Replace(found, `<P ALIGN="CENTER"><img src="http://`, "", -1)
-	ret = strings.Replace(ret, `"></img></P>`, "", -1)
-	ret = strings.Replace(ret, "<br>", "\n", -1)
-	ret = strings.Replace(ret, "xloadswf2.", "", -1)
-	ret = strings.Replace(ret, "Mitsuku", "samaritan", -1)
+	wl := []string{`<P ALIGN="CENTER"><img src="http://`, "", `"></img></P>`, "", "<br>", "\n", "xloadswf2.", "", "Mitsuku", "samaritan"}
+	srp := strings.Replacer(wl...)
+	ret := srp.Replace(found)
 	ret = strings.TrimLeft(ret, " ")
 	return ret
 }
