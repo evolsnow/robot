@@ -132,11 +132,11 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		userTask[user] = conn.Task{}
+		userTask[user] = new(conn.Task)
 		userTask[user].ChatId = update.Message.Chat.ID
 		userTask[user].Owner = user
 
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		return "Ok, what should I remind you to do?"
 	case 1:
@@ -188,9 +188,9 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 		userTask[user].When = redisTime
 		userTask[user].Id = conn.UpdateTaskId()
 		//arrange to do the task
-		go rb.DoTask(userTask[user])
+		go rb.DoTask(*userTask[user])
 		//save task in redis
-		go conn.CreateTask(userTask[user])
+		go conn.CreateTask(*userTask[user])
 		return fmt.Sprintf("Ok, I will remind you that\n*%s* - *%s*", showTime, userTask[user].Desc)
 	}
 	return ""
@@ -247,7 +247,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	switch step {
 	case 0:
 		//init the struct
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		tasks := conn.ReadUserTasks(user)
 		if len(tasks) == 0 {
@@ -282,7 +282,7 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		ret = "Ok, which movie do you want to download?"
 	case 1:
@@ -306,7 +306,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		ret = "Ok, which American show do you want to download?"
 	case 1:
@@ -327,7 +327,7 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		ret = "Ok, what do you want to save?"
 	case 1:
@@ -356,7 +356,7 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		userAction[user] = Action{}
+		userAction[user] = new(Action)
 		userAction[user].ActionStep++
 		ret = "Ok, which memo do you want to remove?(type id)\n" + rb.GetAllMemos(update)
 	case 1:

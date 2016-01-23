@@ -75,7 +75,7 @@ func mitAI(info string) string {
 	found := (string(all[1]))
 	log.Printf("reply from mitsuku machine: %s", found)
 	wl := []string{`<P ALIGN="CENTER"><img src="http://`, "", `"></img></P>`, " ", "<br>", "\n", "xloadswf2.", "", "Mitsuku", "samaritan"}
-	srp := strings.Replacer(wl...)
+	srp := strings.NewReplacer(wl...)
 	ret := srp.Replace(found)
 	ret = strings.TrimLeft(ret, " ")
 	return ret
