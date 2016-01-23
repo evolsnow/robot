@@ -264,16 +264,20 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, which alarm do you want to remove?(type id)\n"
 		userTaskIds[user] = make([]int, len(tasks))
 		for i := range tasks {
-			userTaskIds[user][i] = tasks[i].Id
+			userTaskIds[user] = append(userTaskIds[user], tasks[i].Id)
 			ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
 		}
 	case 1:
-		defer delete(userAction, user)
+		defer func() {
+			delete(userAction, user)
+			delete(userTaskIds, user)
+		}()
 		index, err := strconv.Atoi(update.Message.Text)
 		if err != nil {
 			return "please select the alarm id"
 		}
 		taskId := userTaskIds[user][index-1]
+		log.Println("taskid:", taskId)
 		abortTask[taskId] <- 1
 		ret = "Ok, type '/alarms' to see your new alarms"
 	}
