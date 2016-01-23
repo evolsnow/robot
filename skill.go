@@ -264,7 +264,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, which alarm do you want to remove?(type id)\n"
 		userTaskIds[user] = make([]int, len(tasks))
 		for i := range tasks {
-			userTaskIds[user] = append(userTaskIds[user], tasks[i].Id)
+			userTaskIds[user][i] = tasks[i].Id
 			log.Println(tasks[i].Id)
 			log.Println(userTaskIds[user])
 			ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
