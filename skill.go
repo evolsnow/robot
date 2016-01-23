@@ -196,6 +196,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	return ""
 }
 
+//all tasks do here
 func (rb *Robot) DoTask(ts conn.Task) {
 	nowString := time.Now().Format(RedisFormat)
 	now, _ := time.Parse(RedisFormat, nowString)
@@ -208,6 +209,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		for {
 			select {
 			case <-abortTask[ts.Id]:
+				//triggered by 'rm alarm' command
 				log.Println("abort mission:", ts.Id)
 				conn.DeleteTask(ts)
 				return
@@ -244,10 +246,6 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		//		tmpAction := userAction[user]
-		//		tmpAction.ActionStep++
-		//		userAction[user] = tmpAction
 		//init the struct
 		userAction[user] = Action{}
 		userAction[user].ActionStep++
@@ -272,7 +270,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 			return "please select the alarm id"
 		}
 		taskId := userTaskIds[user][index-1]
-		log.Println("taskid:", taskId)
+		//cancel the task
 		abortTask[taskId] <- 1
 		ret = "Ok, type '/alarms' to see your new alarms"
 	}
