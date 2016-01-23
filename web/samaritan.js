@@ -46,7 +46,18 @@ $(document).ready(function() {
 	// Start the triangle blinking
 	blinkTriangle();
 	chatWebsocket();
+	if (annyang){
+    	annyang.setLanguage('zh-CN');
+	    annyang.start();
+	      SpeechKITT.annyang();
 
+  // Define a stylesheet for KITT to use
+  SpeechKITT.setStylesheet('//cdnjs.cloudflare.com/ajax/libs/SpeechKITT/0.3.0/themes/flat.css');
+
+  // Render KITT's interface
+  SpeechKITT.vroom();
+
+	}
 	// URL parameter message
 	var urlMsg = getUrlParameter('msg');
 	urlMsg = urlMsg.split('%20').join(' ').split('%22').join('').split('%27').join("'");
@@ -69,12 +80,12 @@ var chatWebsocket = function() {
 	var $msg = $('#msg');
 	var $text = $('#userText');
 
-	var WebSocket = window.WebSocket || window.MozWebSocket;
+	WebSocket = window.WebSocket || window.MozWebSocket;
 
 	if (WebSocket) {
 
 		try {
-			var socket = new WebSocket('wss://samaritan.tech:8443/websocket');
+			socket = new WebSocket('wss://samaritan.tech:8443/websocket');
 		} catch(e) {}
 	}
 
