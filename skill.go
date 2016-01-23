@@ -28,6 +28,7 @@ const (
 //zmz.tv needs to login before downloading
 var zmzClient http.Client
 var abortTask = make(map[int]chan int)
+var userTaskIds = make(map[string][]int)
 
 //encapsulated robot message send action
 func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
@@ -260,19 +261,20 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 			delete(userAction, user)
 			return "You have no alarm now, type '/alarm' to set one?"
 		}
-		ret = "Ok, which alarm(s) do you want to remove?\n"
+		ret = "Ok, which alarm do you want to remove?(type id)\n"
+		userTaskIds[user] = make([]int, len(tasks))
 		for i := range tasks {
+			userTaskIds[user][i] = tasks[i].Id
 			ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
 		}
 	case 1:
 		defer delete(userAction, user)
-		taskIds := strings.Split(update.Message.Text, " ")
-		tasks := conn.ReadUserTasks(user)
-		for i := range taskIds {
-			index, _ := strconv.Atoi(taskIds[i])
-			log.Println("task id:", tasks[index-1].Id)
-			abortTask[tasks[index-1].Id] <- 1
+		index, err := strconv.Atoi(update.Message.Text)
+		if err != nil {
+			return "please select the alarm id"
 		}
+		taskId := userTaskIds[user][index-1]
+		abortTask[taskId] <- 1
 		ret = "Ok, type '/alarms' to see your new alarms"
 	}
 	return
@@ -367,12 +369,14 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
-		ret = "Ok, which memo(s) do you want to remove?\n" + rb.GetAllMemos(update)
+		ret = "Ok, which memo do you want to remove?(type id)\n" + rb.GetAllMemos(update)
 	case 1:
 		defer delete(userAction, user)
-		log.Println(update.Message.Text)
-		memos := strings.Split(update.Message.Text, " ")
-		go conn.DeleteMemos(user, memos)
+		index, err := strconv.Atoi(update.Message.Text)
+		if err != nil {
+			return "please select the memo id"
+		}
+		go conn.DeleteMemo(user, index-1)
 		ret = "Ok, type '/memos' to see your new memos"
 	}
 	return

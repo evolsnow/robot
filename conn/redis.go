@@ -3,7 +3,6 @@ package conn
 import (
 	"github.com/garyburd/redigo/redis"
 	"log"
-	"strconv"
 )
 
 type Memo struct {
@@ -61,7 +60,7 @@ func CreateMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
-func DeleteMemos(user string, memos []string) {
+func DeleteMemo(user string, index int) {
 	c := Pool.Get()
 	defer c.Close()
 	var deleteMemoLua = `
@@ -70,12 +69,7 @@ func DeleteMemos(user string, memos []string) {
 	redis.call("DEL", "memo:"..id)
 	`
 	script := redis.NewScript(2, deleteMemoLua)
-	for i := range memos {
-		index, _ := strconv.Atoi(memos[i])
-		if _, err := script.Do(c, user, index-1); err != nil {
-			log.Println(err)
-		}
-	}
+	script.Do(c, user, index)
 }
 
 func UpdateTaskId() int {
