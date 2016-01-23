@@ -49,14 +49,6 @@ $(document).ready(function() {
 	if (annyang){
     	annyang.setLanguage('zh-CN');
 	    annyang.start();
-	      SpeechKITT.annyang();
-
-  // Define a stylesheet for KITT to use
-  SpeechKITT.setStylesheet('//cdnjs.cloudflare.com/ajax/libs/SpeechKITT/0.3.0/themes/flat.css');
-
-  // Render KITT's interface
-  SpeechKITT.vroom();
-
 	}
 	// URL parameter message
 	var urlMsg = getUrlParameter('msg');
