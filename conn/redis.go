@@ -72,7 +72,7 @@ func DeleteMemo(user string, memos []string) {
 	script := redis.NewScript(1, deleteMemoLua)
 	for i := range memos {
 		index, _ := strconv.Atoi(memos[i])
-		if err := script.Do(c, user, index-1); err != nil {
+		if _, err := script.Do(c, user, index-1); err != nil {
 			log.Println(err)
 		}
 	}

@@ -267,10 +267,10 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	case 1:
 		defer delete(userAction, user)
 		taskIds := strings.Split(update.Message.Text, " ")
-		log.Println(taskIds)
 		tasks := conn.ReadUserTasks(user)
 		for i := range taskIds {
 			index, _ := strconv.Atoi(taskIds[i])
+			log.Println("task id:", tasks[index-1].Id)
 			abortTask[tasks[index-1].Id] <- 1
 		}
 		ret = "Ok, type '/alarms' to see your new alarms"
