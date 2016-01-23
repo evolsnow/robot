@@ -214,6 +214,8 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		//set timer
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
+		log.Println("mission id:", ts.Id)
+		abortTask[ts.Id] = make(chan int)
 		for {
 			select {
 			case <-abortTask[ts.Id]:
