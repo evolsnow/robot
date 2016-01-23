@@ -192,7 +192,7 @@
         invokeCallbacks(callbacks.result, results);
         var commandText;
         // go over each of the 5 results and alternative results received (we've set maxAlternatives to 5 above)
-	document.getElementById("userText").value =results[0].trim();
+	document.getElementById("userText").value = results[0].trim();
 	socket.send(results[0].trim());
         for (var i = 0; i<results.length; i++) {
           // the text recognized
