@@ -216,6 +216,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		for {
 			select {
 			case <-abortTask[ts.Id]:
+				log.Println("abort the mission")
 				conn.DeleteTask(ts)
 				return
 			case <-timer.C:
@@ -266,6 +267,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	case 1:
 		defer delete(userAction, user)
 		taskIds := strings.Split(update.Message.Text, " ")
+		log.Println(taskIds)
 		tasks := conn.ReadUserTasks(user)
 		for i := range taskIds {
 			index, _ := strconv.Atoi(taskIds[i])

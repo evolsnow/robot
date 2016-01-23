@@ -67,12 +67,14 @@ func DeleteMemo(user string, memos []string) {
 	var deleteMemoLua = `
 	local id = redis.call("LINDEX", KEYS[1]..":memos")
 	redis.call("LREM", KEYS[1]..":memos", 1, id)
-	redis.call("DEL", "memo:"..elem)
+	redis.call("DEL", "memo:"..id)
 	`
 	script := redis.NewScript(1, deleteMemoLua)
 	for i := range memos {
 		index, _ := strconv.Atoi(memos[i])
-		script.Do(c, user, index-1)
+		if err := script.Do(c, user, index-1); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
