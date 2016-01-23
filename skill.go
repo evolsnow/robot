@@ -132,25 +132,17 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	user := update.Message.Chat.UserName
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
-		tmpTask := userTask[user]
-		tmpTask.ChatId = update.Message.Chat.ID
-		tmpTask.Owner = user
-		userTask[user] = tmpTask
+		userTask[user] = conn.Task{}
+		userTask[user].ChatId = update.Message.Chat.ID
+		userTask[user].Owner = user
 
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userAction[user] = Action{}
+		userAction[user].ActionStep++
 		return "Ok, what should I remind you to do?"
 	case 1:
 		//save task content
-		tmpTask := userTask[user]
-		tmpTask.Desc = update.Message.Text
-		userTask[user] = tmpTask
-
-		tmpAction := userAction[user]
-		tmpAction.ActionStep++
-		userAction[user] = tmpAction
+		userTask[user].Desc = update.Message.Text
+		userAction[user].ActionStep++
 		return "When or how much time after?\n" +
 			"You can type:\n" +
 			"'*2/14 11:30*' means 11:30 at 2/14 \n" + //first format
@@ -193,10 +185,8 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 			}
 		}
 		//save time
-		tmpTask := userTask[user]
-		tmpTask.When = redisTime
-		tmpTask.Id = conn.UpdateTaskId() //get auto-increased id from redis before pass the struct
-		userTask[user] = tmpTask
+		userTask[user].When = redisTime
+		userTask[user].Id = conn.UpdateTaskId()
 		//arrange to do the task
 		go rb.DoTask(userTask[user])
 		//save task in redis
@@ -258,6 +248,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 		//		tmpAction := userAction[user]
 		//		tmpAction.ActionStep++
 		//		userAction[user] = tmpAction
+		//init the struct
 		userAction[user] = Action{}
 		userAction[user].ActionStep++
 		tasks := conn.ReadUserTasks(user)
