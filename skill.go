@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +27,7 @@ const (
 
 //zmz.tv needs to login before downloading
 var zmzClient http.Client
+var abortTask = make(map[int]chan int)
 
 //encapsulated robot message send action
 func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
@@ -210,7 +212,15 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		//set timer
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
-		<-timer.C
+		for {
+			select {
+			case <-abortTask[ts.Id]:
+				conn.DeleteTask(ts)
+				return
+			case <-timer.C:
+				break
+			}
+		}
 	}
 	//else if now is after when means we miss the time to do the task, so do it immediately
 	rawMsg := fmt.Sprintf("Hi %s, maybe it's time to:\n*%s*", ts.Owner, ts.Desc)
@@ -219,10 +229,6 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	}
 	//delete the task from redis, we won't save it
 	conn.DeleteTask(ts)
-}
-
-func (rb *Robot) RemoveReminder(update tgbotapi.Update) (ret string) {
-
 }
 
 //get the given  user's all tasks
@@ -235,6 +241,36 @@ func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	}
 	for i := range tasks {
 		ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
+	}
+	return
+}
+
+func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
+	user := update.Message.Chat.UserName
+	switch step {
+	case 0:
+		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		tmpAction := userAction[user]
+		tmpAction.ActionStep++
+		userAction[user] = tmpAction
+		tasks := conn.ReadUserTasks(user)
+		if len(tasks) == 0 {
+			delete(userAction, user)
+			return "You have no alarm now, type '/alarm' to set one?"
+		}
+		ret = "Ok, which alarm(s) do you want to remove?\n"
+		for i := range tasks {
+			ret += fmt.Sprintf("%d. %s:  %s\n", i+1, tasks[i].When, tasks[i].Desc)
+		}
+	case 1:
+		defer delete(userAction, user)
+		taskIds := strings.Split(update.Message.Text, " ")
+		tasks := conn.ReadUserTasks(user)
+		for i := range taskIds {
+			index, _ := strconv.Atoi(taskIds[i])
+			abortTask[tasks[index-1].Id] <- 1
+		}
+		ret = "Ok, type '/alarms' to see your new alarms"
 	}
 	return
 }
@@ -328,7 +364,7 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 		tmpAction := userAction[user]
 		tmpAction.ActionStep++
 		userAction[user] = tmpAction
-		ret = "Ok, which memo(s) do you want to remove?\n" + rb.ReadAllMemos(update)
+		ret = "Ok, which memo(s) do you want to remove?\n" + rb.GetAllMemos(update)
 	case 1:
 		defer delete(userAction, user)
 		memos := strings.Split(update.Message.Text, " ")
