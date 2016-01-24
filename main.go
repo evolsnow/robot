@@ -103,8 +103,9 @@ func receive(in string) (ret []string) {
 			answer <- tlAI(in)
 		}()
 		go func() {
-			if qinAI(in) != "" {
-				answer <- strings.Replace(qinAI(in), "Jarvis", "samaritan", -1)
+			ret := qinAI(in)
+			if ret != "" {
+				answer <- strings.Replace(ret, "Jarvis", "samaritan", -1)
 			}
 		}()
 		response = <-answer
