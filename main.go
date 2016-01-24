@@ -91,11 +91,18 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 func receive(in string) (ret []string) {
 	fmt.Printf("Received: %s\n", in)
 	var response string
+	var answer chan string
 	sf := func(c rune) bool {
 		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 	}
 	if chinese(in) {
-		response = qinAI(in)
+		go func() {
+			answer <- tlAI(in)
+		}()
+		go func() {
+			answer <- qinAI(in)
+		}()
+		response = <-answer
 		// Separate into fields with func.
 		ret = strings.FieldsFunc(response, sf)
 
