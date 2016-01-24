@@ -89,6 +89,12 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 
 //receive from client
 func receive(in string) (ret []string) {
+	defer func() {
+		if p := recover(); p != nil {
+			err := fmt.Errorf("client closed error: %v", p)
+			log.Println(err)
+		}
+	}()
 	fmt.Printf("Received: %s\n", in)
 	var response string
 	var answer = make(chan string)
