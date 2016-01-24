@@ -80,3 +80,23 @@ func mitAI(info string) string {
 	ret = strings.TrimLeft(ret, " ")
 	return ret
 }
+
+func iceAI(info string) string {
+	info = strings.Replace(info, " ", "+", -1)
+	qinURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", info)
+	resp, err := http.Get(qinURL)
+	if err != nil {
+		log.Printf(err.Error())
+	}
+	defer resp.Body.Close()
+	reply := new(iceReply)
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(reply)
+	log.Printf("reply from xiaoice: %s", reply.Answer)
+	return reply.Answer
+}
+
+type iceReply struct {
+	Code   int    `json:"code"`
+	Answer string `json:"answer"`
+}

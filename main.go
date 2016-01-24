@@ -97,6 +97,9 @@ func receive(in string) (ret []string) {
 	}
 	if chinese(in) {
 		go func() {
+			answer <- iceAI(in)
+		}()
+		go func() {
 			answer <- tlAI(in)
 		}()
 		go func() {
