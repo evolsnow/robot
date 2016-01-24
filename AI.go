@@ -82,9 +82,16 @@ func mitAI(info string) string {
 }
 
 func iceAI(info string) string {
+	//Ice may failed sometimes
+	defer func() {
+		if p := recover(); p != nil {
+			err := fmt.Errorf("xiaoice error: %v", p)
+			log.Println(err)
+		}
+	}()
 	info = strings.Replace(info, " ", "+", -1)
-	qinURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", info)
-	resp, err := http.Get(qinURL)
+	iceURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", info)
+	resp, err := http.Get(iceURL)
 	if err != nil {
 		log.Printf(err.Error())
 	}
