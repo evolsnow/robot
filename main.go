@@ -100,7 +100,9 @@ func receive(in string) (ret []string) {
 			answer <- tlAI(in)
 		}()
 		go func() {
-			answer <- strings.Replace(qinAI(in), "Jarvis", "samaritan", -1)
+			if qinAI(in) != "" {
+				answer <- strings.Replace(qinAI(in), "Jarvis", "samaritan", -1)
+			}
 		}()
 		response = <-answer
 		// Separate into fields with func.
