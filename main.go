@@ -54,7 +54,7 @@ func socketHandler(ws *websocket.Conn) {
 		var in string
 		var ret []string
 		if err := websocket.Message.Receive(ws, &in); err != nil {
-			log.Println(err)
+			log.Println("socket closed")
 			return
 		}
 		ret = receive(in)
