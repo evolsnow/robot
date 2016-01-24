@@ -94,9 +94,8 @@ func receive(in string) (ret []string) {
 	sf := func(c rune) bool {
 		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 	}
-
 	if chinese(in) {
-		response = tlAI(in)
+		response = qinAI(in)
 		// Separate into fields with func.
 		ret = strings.FieldsFunc(response, sf)
 
