@@ -91,7 +91,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 func receive(in string) (ret []string) {
 	fmt.Printf("Received: %s\n", in)
 	var response string
-	var answer chan string
+	var answer = make(chan string)
 	sf := func(c rune) bool {
 		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 	}
