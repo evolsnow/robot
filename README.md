@@ -1,6 +1,6 @@
 # **robot**
 An amazing telegram robot.
-
+[![Build Status](https://api.travis-ci.org/evolsnow/robot.svg?branch=master)](https://travis-ci.org/evolsnow/robot)
 
 ### **Feature**
 Basically, you can talk with the robot with both ```Chinese``` and ```English``` because it has 4 Artificial Intelligence inside:
