@@ -23,13 +23,13 @@ type Task struct {
 func CreateMasterId(id int) {
 	c := Pool.Get()
 	defer c.Close()
-	c.Do("SET", "evolsnowChatId", id)
+	c.Do("SET", "masterChatId", id)
 }
 
 func ReadMasterId() int {
 	c := Pool.Get()
 	defer c.Close()
-	id, _ := redis.Int(c.Do("GET", "evolsnowChatId"))
+	id, _ := redis.Int(c.Do("GET", "masterChatId"))
 	return id
 }
 

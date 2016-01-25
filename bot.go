@@ -55,6 +55,14 @@ func (rb *Robot) run() {
 	}
 }
 
+func restoreTasks(rb *Robot) {
+	tasks := conn.ReadAllTasks()
+	log.Println("unfinished tasks:", len(tasks))
+	for i := range tasks {
+		go rb.DoTask(tasks[i])
+	}
+}
+
 func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -169,13 +177,5 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
-	}
-}
-
-func restoreTasks(rb *Robot) {
-	tasks := conn.ReadAllTasks()
-	log.Println("unfinished tasks:", len(tasks))
-	for i := range tasks {
-		go rb.DoTask(tasks[i])
 	}
 }

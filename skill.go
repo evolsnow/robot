@@ -513,13 +513,13 @@ func getZMZResourceId(name string) (id string) {
 	}
 }
 
-//login zmz first before zmz don't allow login at different browsers, but I have two robots...
+//login zmz first because zmz don't allow login at different browsers, but I have two robots...
 func loginZMZ() {
 	gCookieJar, _ := cookiejar.New(nil)
 	zmzURL := "http://www.zimuzu.tv/User/Login/ajaxLogin"
 	zmzClient = http.Client{
 		Jar: gCookieJar,
 	}
-	//post with my public account
+	//post with my public account, you can use it also
 	zmzClient.PostForm(zmzURL, url.Values{"account": {"evol4snow"}, "password": {"104545"}, "remember": {"0"}})
 }
