@@ -56,12 +56,12 @@ func (rb *Robot) Start(update tgbotapi.Update) string {
 	return fmt.Sprintf("welcome: %s.\nType '/help' see what can I do.", user)
 }
 
+//help message
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
 /alarms - show all of your alarms
 /rmalarm - remove alarm
-/evolve	- self evolution of me
 /memo - save a memo
 /memos - show all of your memos
 /rmmemo - remove memo
@@ -73,7 +73,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
-//remote execute self evolve script, exit the robot
+//remote execute self evolve script, exit the robot, only for test.
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
 		rb.Reply(update, "sorry, unauthorized")
