@@ -51,7 +51,7 @@ After that, you have two options to run the robot:
 ```
 /path/to/file/robot -c /path/to/config.json
 ```
-* Or clone the object and build it yourself(```golang``` required):
+* Or clone the object and build it yourself (```golang``` required):
 ```
 go get github.com/evolsnow/robot
 go build github.com/evolsnow/robot
@@ -59,6 +59,7 @@ go build github.com/evolsnow/robot
 ```
 
 ### **Development**
-This project is written in [go1.5](https://golang.org/doc/install) .
+This project is written in [go1.5](https://golang.org/doc/install).
+
 Contact me for further questions: [@evolsnow](https://telegram.me/evolsnow)
 
