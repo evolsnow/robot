@@ -47,7 +47,7 @@ But if you want to build your own robot:
 
 After that, you have two options to run the robot:
 
-* Execute the binary file:
+* Execute the binary file from [release](https://github.com/evolsnow/robot/releases):
 ```
 /path/to/file/robot -c /path/to/config.json
 ```

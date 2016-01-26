@@ -1,6 +1,8 @@
 #!/bin/bash
 cd build
+rm -rf .*
 gox github.com/evolsnow/robot
+mkdir -p out
 for FILE in *
 do
   DIR="${FILE%.*}"_v1.0
