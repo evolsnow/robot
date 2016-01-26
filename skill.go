@@ -81,6 +81,7 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 	}
 	<-saidGoodBye
 	close(saidGoodBye)
+	//git pull and restart
 	cmd := exec.Command("bash", "/root/evolve_"+rb.nickName)
 	cmd.Start()
 	os.Exit(1)
@@ -120,7 +121,7 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 	}
 	log.Printf(info)
 
-	if rb.nickName == "samaritan" {
+	if rb.nickName != "jarvis" {
 		if chinese(info) {
 			return tlAI(info)
 		} else {
