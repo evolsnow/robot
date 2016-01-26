@@ -18,7 +18,6 @@ Additionally, it supports the following commands:
 /alarm - set an alarm
 /alarms - show all of your alarms
 /rmalarm - remove an alarm
-/evolve	- self evolution of me
 /memo - save a memo
 /memos - show all of your memos
 /rmmemo - remove a memo
