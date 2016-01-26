@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var messages = make(chan string)
-
 func main() {
 	var configFile string
 	var debug bool
@@ -70,6 +68,7 @@ func socketHandler(ws *websocket.Conn) {
 //when webSocket unavailable, fallback to ajax long polling
 func ajax(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
+	var messages = make(chan string)
 	if r.Method == "GET" {
 		w.Write([]byte(<-messages))
 	} else {
