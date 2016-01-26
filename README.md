@@ -59,6 +59,8 @@ go build github.com/evolsnow/robot
 /path/to/file/robot -c /path/to/config.json
 ```
 
+You may want to add ```-d``` flag to debug.
+
 ### **Development**
 This project is written in [go1.5](https://golang.org/doc/install).
 
