@@ -41,7 +41,7 @@ func qinAI(info string) string {
 	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", info)
 	resp, err := http.Get(qinURL)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println("get error:", err)
 	}
 	defer resp.Body.Close()
 	reply := new(qinReply)
