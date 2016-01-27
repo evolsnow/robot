@@ -54,7 +54,7 @@ func groupTalk() {
 	//iceChan := make(chan string, 5)
 	initSentence := "你好"
 	//iceChan <- tlAI(initSentence)
-	qinChan <- tlAI(initSentence)
+	tlChan <- qinAI(initSentence)
 	for {
 		select {
 		//case msgToIce := <-iceChan:
@@ -62,12 +62,10 @@ func groupTalk() {
 		//	tlChan <- replyFromIce
 		//	qinChan <- replyFromIce
 		case msgToTl := <-tlChan:
-			time.Sleep(time.Second * 3)
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
 		//iceChan <- replyFromTl
 		case msgToQin := <-qinChan:
-			time.Sleep(time.Second * 3)
 			replyFromQin := qinAI(msgToQin)
 			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
