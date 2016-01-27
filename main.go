@@ -49,14 +49,12 @@ func main() {
 }
 
 func groupTalk() {
-	tlChan := make(chan string)
-	qinChan := make(chan string)
+	tlChan := make(chan string, 5)
+	qinChan := make(chan string, 5)
 	//iceChan := make(chan string, 5)
 	initSentence := "你好"
 	//iceChan <- tlAI(initSentence)
-	go func() {
-		tlChan <- qinAI(initSentence)
-	}()
+	tlChan <- qinAI(initSentence)
 	for {
 		select {
 		//case msgToIce := <-iceChan:
