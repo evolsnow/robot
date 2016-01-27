@@ -54,24 +54,49 @@ func groupTalk() {
 	iceChan := make(chan string, 5)
 	initSentence := "你好"
 	tlChan <- tlAI(initSentence)
-	for {
-		select {
-		case msgToIce := <-iceChan:
-			replyFromIce := iceAI(msgToIce)
-			tlChan <- replyFromIce
-			qinChan <- replyFromIce
-		case msgToTl := <-tlChan:
-			time.Sleep(time.Second)
+	go func() {
+		for {
+			msgToTl := <-tlChan
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
 			iceChan <- replyFromTl
-		case msgToQin := <-qinChan:
-			time.Sleep(time.Second)
-			replyFromQin := qinAI(msgToQin)
-			iceChan <- replyFromQin
-			tlChan <- replyFromQin
 		}
+	}()
+
+	go func() {
+		for {
+			msgToIce := <-iceChan
+			replyFromIce := iceAI(msgToIce)
+			tlChan <- replyFromIce
+			qinChan <- replyFromIce
+		}
+	}()
+
+	for {
+		msgToQin := <-qinChan
+		time.Sleep(time.Second)
+		replyFromQin := qinAI(msgToQin)
+		iceChan <- replyFromQin
+		tlChan <- replyFromQin
 	}
+
+	//for {
+	//	select {
+	//	case msgToIce := <-iceChan:
+	//		replyFromIce := iceAI(msgToIce)
+	//		tlChan <- replyFromIce
+	//		qinChan <- replyFromIce
+	//	case msgToTl := <-tlChan:
+	//		time.Sleep(time.Second)
+	//		replyFromTl := tlAI(msgToTl)
+	//		qinChan <- replyFromTl
+	//		iceChan <- replyFromTl
+	//	case msgToQin := <-qinChan:
+	//		time.Sleep(time.Second)
+	//		replyFromQin := qinAI(msgToQin)
+	//		iceChan <- replyFromQin
+	//		tlChan <- replyFromQin
+
 }
 
 //used for web samaritan robot
