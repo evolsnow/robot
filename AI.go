@@ -39,10 +39,10 @@ type tlReply struct {
 func qinAI(info string) string {
 	info = strings.Replace(info, " ", "+", -1)
 	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", info)
-	resp, err := http.Get(qinURL)
+	parsed, _ := url.Parse(qinURL)
+	resp, err := http.Get(parsed.String())
 	if err != nil {
-		log.Println("get error:", err)
-		log.Println(resp.Body)
+		log.Println(err)
 	}
 	defer resp.Body.Close()
 	reply := new(qinReply)
