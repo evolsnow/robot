@@ -51,32 +51,32 @@ func main() {
 func groupTalk() {
 	tlChan := make(chan string, 5)
 	qinChan := make(chan string, 5)
-	iceChan := make(chan string, 5)
+	//iceChan := make(chan string, 5)
 	initSentence := "你好"
-	tlChan <- tlAI(initSentence)
+	tlChan <- qinAI(initSentence)
 	go func() {
 		for {
 			msgToTl := <-tlChan
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
-			iceChan <- replyFromTl
+			//iceChan <- replyFromTl
 		}
 	}()
 
-	go func() {
-		for {
-			msgToIce := <-iceChan
-			replyFromIce := iceAI(msgToIce)
-			tlChan <- replyFromIce
-			qinChan <- replyFromIce
-		}
-	}()
+	//go func() {
+	//	for {
+	//msgToIce := <-iceChan
+	//replyFromIce := iceAI(msgToIce)
+	//tlChan <- replyFromIce
+	//qinChan <- replyFromIce
+	//}
+	//}()
 
 	for {
 		msgToQin := <-qinChan
 		time.Sleep(time.Second)
 		replyFromQin := qinAI(msgToQin)
-		iceChan <- replyFromQin
+		//iceChan <- replyFromQin
 		tlChan <- replyFromQin
 	}
 
