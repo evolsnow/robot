@@ -40,12 +40,39 @@ func main() {
 	robot.bot.Debug = debug
 	go robot.run()
 
+	go groupTalk()
+
 	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
 	http.Handle("/websocket", websocket.Handler(socketHandler))
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
 
+}
+
+func groupTalk() {
+	tlChan := make(chan string, 5)
+	qinChan := make(chan string, 5)
+	iceChan := make(chan string, 5)
+	initSentence := "你好"
+	iceChan <- tlAI(initSentence)
+	qinChan <- tlAI(initSentence)
+	for {
+		select {
+		case msgToIce := <-iceChan:
+			replyFromIce := iceAI(msgToIce)
+			tlChan <- replyFromIce
+			qinChan <- replyFromIce
+		case msgToTl := <-tlChan:
+			replyFromTl := tlAI(msgToTl)
+			qinChan <- replyFromTl
+			iceChan <- replyFromTl
+		case msgToQin := <-qinChan:
+			replyFromQin := qinAI(msgToQin)
+			iceChan <- replyFromQin
+			tlChan <- replyFromQin
+		}
+	}
 }
 
 //used for web samaritan robot
