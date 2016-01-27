@@ -67,8 +67,8 @@ func groupTalk() {
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
 		//iceChan <- replyFromTl
-		case msgToQin := <-qinChan:
-			replyFromQin := qinAI(msgToQin)
+		case <-qinChan:
+			replyFromQin := qinAI("你好")
 			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
 		}
