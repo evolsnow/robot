@@ -55,7 +55,7 @@ func groupTalk() {
 	initSentence := "你好"
 	//iceChan <- tlAI(initSentence)
 	go func() {
-		qinChan <- tlAI(initSentence)
+		tlChan <- qinAI(initSentence)
 	}()
 	for {
 		select {
