@@ -18,7 +18,6 @@ Additionally, it supports the following commands:
 /alarm - set an alarm
 /alarms - show all of your alarms
 /rmalarm - remove an alarm
-/evolve	- self evolution of me
 /memo - save a memo
 /memos - show all of your memos
 /rmmemo - remove a memo
@@ -48,16 +47,18 @@ But if you want to build your own robot:
 
 After that, you have two options to run the robot:
 
-* Execute the binary file:
+* Execute the binary file from [release](https://github.com/evolsnow/robot/releases):
 ```
 /path/to/file/robot -c /path/to/config.json
 ```
 * Or clone the object and build it yourself (```golang``` required):
 ```
-go get github.com/evolsnow/robot
+go get -u github.com/evolsnow/robot
 go build github.com/evolsnow/robot
 /path/to/file/robot -c /path/to/config.json
 ```
+
+You may want to add ```-d``` flag to debug.
 
 ### **Development**
 This project is written in [go1.5](https://golang.org/doc/install).
