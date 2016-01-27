@@ -12,10 +12,9 @@ import (
 )
 
 func tlAI(info string) string {
-	info = strings.Replace(info, " ", "", -1)
 	key := "a5052a22b8232be1e387ff153e823975"
 	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, info)
-	resp, err := http.Get(tuLingURL)
+	resp, err := http.Get(url.QueryEscape(tuLingURL))
 	if err != nil {
 		log.Printf(err.Error())
 	}
@@ -38,8 +37,8 @@ type tlReply struct {
 
 func qinAI(info string) string {
 	//info = strings.Replace(info, " ", "+", -1)
-	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", url.QueryEscape(info))
-	resp, err := http.Get(qinURL)
+	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", info)
+	resp, err := http.Get(url.QueryEscape(qinURL))
 	if err != nil {
 		log.Println(err)
 		return ""
@@ -90,9 +89,8 @@ func iceAI(info string) string {
 			log.Println(err)
 		}
 	}()
-	info = strings.Replace(info, " ", "+", -1)
 	iceURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", info)
-	resp, err := http.Get(iceURL)
+	resp, err := http.Get(url.QueryEscape(iceURL))
 	if err != nil {
 		log.Printf(err.Error())
 	}
