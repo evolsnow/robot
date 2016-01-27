@@ -38,7 +38,7 @@ func main() {
 	robot.bot.Debug = debug
 	go robot.run()
 
-	go groupTalk()
+	//go groupTalk()
 
 	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
