@@ -51,23 +51,23 @@ func main() {
 func groupTalk() {
 	tlChan := make(chan string, 5)
 	qinChan := make(chan string, 5)
-	iceChan := make(chan string, 5)
+	//iceChan := make(chan string, 5)
 	initSentence := "你好"
-	iceChan <- tlAI(initSentence)
+	//iceChan <- tlAI(initSentence)
 	qinChan <- tlAI(initSentence)
 	for {
 		select {
-		case msgToIce := <-iceChan:
-			replyFromIce := iceAI(msgToIce)
-			tlChan <- replyFromIce
-			qinChan <- replyFromIce
+		//case msgToIce := <-iceChan:
+		//	replyFromIce := iceAI(msgToIce)
+		//	tlChan <- replyFromIce
+		//	qinChan <- replyFromIce
 		case msgToTl := <-tlChan:
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
-			iceChan <- replyFromTl
+		//iceChan <- replyFromTl
 		case msgToQin := <-qinChan:
 			replyFromQin := qinAI(msgToQin)
-			iceChan <- replyFromQin
+			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
 		}
 	}
