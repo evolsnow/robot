@@ -62,10 +62,12 @@ func groupTalk() {
 		//	tlChan <- replyFromIce
 		//	qinChan <- replyFromIce
 		case msgToTl := <-tlChan:
+			time.Sleep(time.Second / 2)
 			replyFromTl := tlAI(msgToTl)
 			qinChan <- replyFromTl
 		//iceChan <- replyFromTl
 		case msgToQin := <-qinChan:
+			time.Sleep(time.Second / 2)
 			replyFromQin := qinAI(msgToQin)
 			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
