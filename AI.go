@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func tlAI(info string) string {
@@ -38,7 +39,12 @@ type tlReply struct {
 func qinAI(info string) string {
 	//info = strings.Replace(info, " ", "+", -1)
 	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", url.QueryEscape(info))
-	resp, err := http.Get(qinURL)
+	timeout := time.Duration(2 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Get(qinURL)
+	//resp, err := http.Get(qinURL)
 	if err != nil {
 		log.Println(err)
 		return ""
