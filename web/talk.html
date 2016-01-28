@@ -16,6 +16,7 @@
 
         if (socket) {
             socket.onmessage = function (event) {
+                console.log(event.data);
                 document.getElementById("chat").append('<p>' + event.data + '</p>');
             }
         } else {
