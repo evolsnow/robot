@@ -5,7 +5,7 @@
     <title>talk</title>
     <script>
         var WebSocket = window.WebSocket || window.MozWebSocket;
-
+        var $chat = $('#chat');
         if (WebSocket) {
 
             try {
@@ -16,8 +16,7 @@
 
         if (socket) {
             socket.onmessage = function (event) {
-                console.log(event.data);
-                document.getElementById("chat").append('<p>' + event.data + '</p>');
+                $chat.append('<p>' + event.data + '</p>');
             }
         } else {
 

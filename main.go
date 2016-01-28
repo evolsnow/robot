@@ -67,7 +67,6 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 		for {
 			msgToTl := <-tlChan
 			replyFromTl := tlAI(msgToTl)
-			log.Println("send:", replyFromTl)
 			c.WriteMessage(websocket.TextMessage, []byte("samaritan: "+replyFromTl))
 			qinChan <- replyFromTl
 			//iceChan <- replyFromTl
@@ -87,7 +86,6 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 		for {
 			msgToQin := <-qinChan
 			replyFromQin := qinAI(msgToQin)
-			log.Println("send:", replyFromQin)
 			c.WriteMessage(websocket.TextMessage, []byte("菲菲: "+replyFromQin))
 			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
