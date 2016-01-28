@@ -52,34 +52,51 @@ func main() {
 }
 
 func groupTalk(w http.ResponseWriter, r *http.Request) {
-	tlChan := make(chan string, 5)
-	qinChan := make(chan string, 5)
-	//iceChan := make(chan string, 5)
-	initSentence := "你好"
-	tlChan <- qinAI(initSentence)
-	go func() {
-		for {
-			msgToTl := <-tlChan
-			replyFromTl := tlAI(msgToTl)
-			qinChan <- replyFromTl
-			//iceChan <- replyFromTl
-		}
-	}()
-
-	//go func() {
-	//	for {
-	//		msgToIce := <-iceChan
-	//		replyFromIce := iceAI(msgToIce)
-	//		tlChan <- replyFromIce
-	//		qinChan <- replyFromIce
-	//	}
-	//}()
-
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
 	for {
-		msgToQin := <-qinChan
-		replyFromQin := qinAI(msgToQin)
-		//iceChan <- replyFromQin
-		tlChan <- replyFromQin
+		_, _, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+
+		tlChan := make(chan string, 5)
+		qinChan := make(chan string, 5)
+		//iceChan := make(chan string, 5)
+		initSentence := "你好"
+		tlChan <- qinAI(initSentence)
+		go func() {
+			for {
+				msgToTl := <-tlChan
+				replyFromTl := tlAI(msgToTl)
+				qinChan <- replyFromTl
+				c.WriteMessage(websocket.TextMessage, []byte("samaritan: "+replyFromTl))
+				//iceChan <- replyFromTl
+			}
+		}()
+
+		//go func() {
+		//	for {
+		//		msgToIce := <-iceChan
+		//		replyFromIce := iceAI(msgToIce)
+		//		tlChan <- replyFromIce
+		//		qinChan <- replyFromIce
+		//	}
+		//}()
+
+		for {
+			msgToQin := <-qinChan
+			replyFromQin := qinAI(msgToQin)
+			//iceChan <- replyFromQin
+			tlChan <- replyFromQin
+			c.WriteMessage(websocket.TextMessage, []byte("菲菲: "+replyFromQin))
+
+		}
 	}
 }
 
