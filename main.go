@@ -16,6 +16,7 @@ import (
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
 	return true
 }} // use default options for webSocket
+var visitor = 0
 
 func main() {
 	var configFile string
@@ -58,6 +59,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
+	visitor++
 	tlChan := make(chan string, 5)
 	qinChan := make(chan string, 5)
 	//iceChan := make(chan string, 5)
@@ -65,11 +67,13 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 	tlChan <- qinAI(initSentence)
 	go func() {
 		for {
-			msgToTl := <-tlChan
-			replyFromTl := tlAI(msgToTl)
-			c.WriteMessage(websocket.TextMessage, []byte("samaritan: "+replyFromTl))
-			qinChan <- replyFromTl
-			//iceChan <- replyFromTl
+			if visitor > 0 {
+				msgToTl := <-tlChan
+				replyFromTl := tlAI(msgToTl)
+				c.WriteMessage(websocket.TextMessage, []byte("samaritan: "+replyFromTl))
+				qinChan <- replyFromTl
+				//iceChan <- replyFromTl
+			}
 		}
 	}()
 
@@ -84,12 +88,14 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
-			msgToQin := <-qinChan
-			replyFromQin := qinAI(msgToQin)
-			c.WriteMessage(websocket.TextMessage, []byte("菲菲: "+replyFromQin))
-			//iceChan <- replyFromQin
-			tlChan <- replyFromQin
+			if visitor > 0 {
+				msgToQin := <-qinChan
+				replyFromQin := qinAI(msgToQin)
+				c.WriteMessage(websocket.TextMessage, []byte("菲菲: "+replyFromQin))
+				//iceChan <- replyFromQin
+				tlChan <- replyFromQin
 
+			}
 		}
 	}()
 
@@ -98,6 +104,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 		_, _, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
+			visitor--
 			break
 		}
 
