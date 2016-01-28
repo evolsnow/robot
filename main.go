@@ -52,6 +52,7 @@ func main() {
 
 }
 
+//3 robot's group talk
 func groupTalk(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
