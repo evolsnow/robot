@@ -71,14 +71,15 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			if visitor > 0 {
 				msgToTl := <-tlChan
 				replyFromTl := tlAI(msgToTl)
-				qinChan <- replyFromTl
-				//Ice is too slow
-				if len(iceChan) < cap(iceChan) {
-					iceChan <- replyFromTl
-				}
+				go func() {
+					qinChan <- replyFromTl
+					//Ice is too slow
+					if len(iceChan) < cap(iceChan) {
+						iceChan <- replyFromTl
+					}
+				}()
 				result <- "samaritan: " + replyFromTl
 				//c.WriteMessage(websocket.TextMessage, []byte("samaritan: " + replyFromTl))
-
 			}
 		}
 	}()
@@ -88,10 +89,12 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			if visitor > 0 {
 				msgToQin := <-qinChan
 				replyFromQin := qinAI(msgToQin)
-				tlChan <- replyFromQin
-				if len(iceChan) < cap(iceChan) {
-					iceChan <- replyFromQin
-				}
+				go func() {
+					tlChan <- replyFromQin
+					if len(iceChan) < cap(iceChan) {
+						iceChan <- replyFromQin
+					}
+				}()
 				result <- "菲菲: " + replyFromQin
 				//c.WriteMessage(websocket.TextMessage, []byte("菲菲: " + replyFromQin))
 
@@ -104,8 +107,10 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			if visitor > 0 {
 				msgToIce := <-iceChan
 				replyFromIce := iceAI(msgToIce)
-				tlChan <- replyFromIce
-				qinChan <- replyFromIce
+				go func() {
+					tlChan <- replyFromIce
+					qinChan <- replyFromIce
+				}()
 				result <- "小冰: " + replyFromIce
 				//c.WriteMessage(websocket.TextMessage, []byte("小冰: " + replyFromIce))
 
