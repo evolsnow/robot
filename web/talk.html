@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <title>talk</title>
     <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
-    <script>
-        var WebSocket = window.WebSocket || window.MozWebSocket;
-        var $chat = $('#chat');
-        if (WebSocket) {
-
-            try {
-                var socket = new WebSocket('wss://samaritan.tech:8443/groupTalk');
-            } catch (e) {
-            }
-        }
-
-        if (socket) {
-            socket.onmessage = function (event) {
-                console.log(event.data);
-                $chat.append('<p>' + event.data + '</p>');
-            }
-        } else {
-
-        }
-    </script>
 </head>
 <body>
 <p id="chat">&nbsp;</p>
 </body>
+<script>
+    var WebSocket = window.WebSocket || window.MozWebSocket;
+    var $chat = $('#chat');
+    if (WebSocket) {
+
+        try {
+            var socket = new WebSocket('wss://samaritan.tech:8443/groupTalk');
+        } catch (e) {
+        }
+    }
+
+    if (socket) {
+        socket.onmessage = function (event) {
+            console.log(event.data);
+            $chat.append('<p>' + event.data + '</p>');
+        }
+    } else {
+
+    }
+</script>
 </html>
