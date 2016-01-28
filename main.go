@@ -46,7 +46,7 @@ func main() {
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
 	http.HandleFunc("/websocket", socketHandler)
-	http.HandleFunc("/talk", groupTalk)
+	http.HandleFunc("/groupTalk", groupTalk)
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
 
 }
