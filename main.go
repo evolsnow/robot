@@ -65,7 +65,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 	tlChan <- qinAI(initSentence)
 
 	for {
-		_, _, err := c.ReadMessage()
+		mt, _, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
@@ -75,7 +75,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 				msgToTl := <-tlChan
 				replyFromTl := tlAI(msgToTl)
 				log.Println("send:", replyFromTl)
-				c.WriteMessage(websocket.TextMessage, []byte("samaritan: "+replyFromTl))
+				c.WriteMessage(mt, []byte("samaritan: "+replyFromTl))
 				qinChan <- replyFromTl
 				//iceChan <- replyFromTl
 			}
@@ -94,7 +94,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			msgToQin := <-qinChan
 			replyFromQin := qinAI(msgToQin)
 			log.Println("send:", replyFromQin)
-			c.WriteMessage(websocket.TextMessage, []byte("菲菲: "+replyFromQin))
+			c.WriteMessage(mt, []byte("菲菲: "+replyFromQin))
 			//iceChan <- replyFromQin
 			tlChan <- replyFromQin
 
