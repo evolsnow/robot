@@ -182,12 +182,6 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 
 //receive from client
 func receive(in string) (ret []string) {
-	defer func() {
-		if p := recover(); p != nil {
-			err := fmt.Errorf("client closed error: %v", p)
-			log.Println(err)
-		}
-	}()
 	fmt.Printf("Received: %s\n", in)
 	var response string
 	var answer = make(chan string)
@@ -196,14 +190,17 @@ func receive(in string) (ret []string) {
 	}
 	if chinese(in) {
 		go func() {
-			answer <- iceAI(in)
+			if ret := iceAI(in); ret != "" {
+				answer <- ret
+			}
 		}()
 		go func() {
-			answer <- tlAI(in)
+			if ret := tlAI(in); ret != "" {
+				answer <- ret
+			}
 		}()
 		go func() {
-			ret := qinAI(in)
-			if ret != "" {
+			if ret := qinAI(in); ret != "" {
 				answer <- strings.Replace(ret, "Jarvis", "samaritan", -1)
 			}
 		}()

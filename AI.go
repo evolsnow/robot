@@ -87,17 +87,14 @@ func mitAI(info string) string {
 }
 
 func iceAI(info string) string {
-	//Ice may failed sometimes
-	defer func() {
-		if p := recover(); p != nil {
-			err := fmt.Errorf("xiaoice error: %v", p)
-			log.Println(err)
-		}
-	}()
 	iceURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", url.QueryEscape(info))
-	resp, err := http.Get(iceURL)
+	timeout := time.Duration(4 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Get(iceURL)
 	if err != nil {
-		log.Printf(err.Error())
+		return ""
 	}
 	defer resp.Body.Close()
 	reply := new(iceReply)
