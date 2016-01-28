@@ -72,6 +72,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 				msgToTl := <-tlChan
 				replyFromTl := tlAI(msgToTl)
 				qinChan <- replyFromTl
+				//Ice is too slow
 				if len(iceChan) < cap(iceChan) {
 					iceChan <- replyFromTl
 				}
@@ -111,16 +112,20 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
+
+	go func() {
+		for {
+			c.WriteMessage(websocket.TextMessage, []byte(<-result))
+		}
+	}()
 	for {
 
 		_, _, err := c.ReadMessage()
-		log.Println("su")
 		if err != nil {
 			log.Println("read:", err)
 			visitor--
 			break
 		}
-		c.WriteMessage(websocket.TextMessage, []byte(<-result))
 	}
 }
 
