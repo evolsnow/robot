@@ -46,7 +46,6 @@ func qinAI(info string) string {
 	resp, err := client.Get(qinURL)
 	//resp, err := http.Get(qinURL)
 	if err != nil {
-		log.Println(err)
 		return ""
 	}
 	defer resp.Body.Close()

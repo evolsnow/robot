@@ -65,7 +65,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 	iceChan := make(chan string, 5)
 	result := make(chan string, 10)
 	initSentence := "你好"
-	tlChan <- qinAI(initSentence)
+	tlChan <- tlAI(initSentence)
 	go func() {
 		for {
 			if visitor > 0 {
