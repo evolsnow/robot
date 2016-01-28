@@ -31,7 +31,7 @@ func tlAI(info string) string {
 }
 
 type tlReply struct {
-	code int    `json:"code"`
+	code int
 	Url  string `json:"url,omitempty"`
 	Text string `json:"text"`
 }
@@ -60,7 +60,7 @@ func qinAI(info string) string {
 }
 
 type qinReply struct {
-	result  int    `json:"resulte"`
+	result  int
 	Content string `json:"content"`
 }
 
