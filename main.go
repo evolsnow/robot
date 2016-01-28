@@ -45,8 +45,8 @@ func main() {
 	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
-	http.Handle("/websocket", socketHandler)
-	http.Handle("/talk", groupTalk)
+	http.HandleFunc("/websocket", socketHandler)
+	http.HandleFunc("/talk", groupTalk)
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
 
 }
@@ -110,7 +110,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		var in string
+		var in []byte
 		var ret []string
 		mt, in, err := c.ReadMessage()
 		if err != nil {
@@ -119,7 +119,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		ret = receive(string(in))
 		for i := range ret {
-			c.WriteMessage(mt, ret[i])
+			c.WriteMessage(mt, []byte(ret[i]))
 			time.Sleep(time.Second)
 		}
 		c.WriteMessage(mt, []byte(""))
