@@ -125,6 +125,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			c.WriteMessage(websocket.TextMessage, []byte(<-result))
 		}
 	}()
+
 	for {
 
 		_, _, err := c.ReadMessage()
