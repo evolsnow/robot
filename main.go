@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/evolsnow/robot/conn"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 	"log"
 	"net"
 	"net/http"
@@ -12,6 +12,10 @@ import (
 	"strings"
 	"time"
 )
+
+var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
+	return true
+}} // use default options for webSocket
 
 func main() {
 	var configFile string
@@ -38,20 +42,19 @@ func main() {
 	robot.bot.Debug = debug
 	go robot.run()
 
-	//go groupTalk()
-
 	//run server and web samaritan
 	srvPort := strconv.Itoa(config.Port)
 	http.HandleFunc("/ajax", ajax)
-	http.Handle("/websocket", websocket.Handler(socketHandler))
+	http.Handle("/websocket", socketHandler)
+	http.Handle("/talk", groupTalk)
 	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(config.Server, srvPort), config.Cert, config.CertKey, nil))
 
 }
 
-func groupTalk() {
+func groupTalk(w http.ResponseWriter, r *http.Request) {
 	tlChan := make(chan string, 5)
 	qinChan := make(chan string, 5)
-	//iceChan := make(chan string, 5)
+	iceChan := make(chan string, 5)
 	initSentence := "你好"
 	tlChan <- qinAI(initSentence)
 	go func() {
@@ -63,20 +66,19 @@ func groupTalk() {
 		}
 	}()
 
-	//go func() {
-	//	for {
-	//msgToIce := <-iceChan
-	//replyFromIce := iceAI(msgToIce)
-	//tlChan <- replyFromIce
-	//qinChan <- replyFromIce
-	//}
-	//}()
+	go func() {
+		for {
+			msgToIce := <-iceChan
+			replyFromIce := iceAI(msgToIce)
+			tlChan <- replyFromIce
+			qinChan <- replyFromIce
+		}
+	}()
 
 	for {
 		msgToQin := <-qinChan
-		time.Sleep(time.Second)
 		replyFromQin := qinAI(msgToQin)
-		//iceChan <- replyFromQin
+		iceChan <- replyFromQin
 		tlChan <- replyFromQin
 	}
 
@@ -100,21 +102,27 @@ func groupTalk() {
 }
 
 //used for web samaritan robot
-func socketHandler(ws *websocket.Conn) {
+func socketHandler(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
 	for {
 		var in string
 		var ret []string
-		if err := websocket.Message.Receive(ws, &in); err != nil {
-			log.Println("socket closed")
-			return
+		mt, in, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
 		}
-		ret = receive(in)
-
+		ret = receive(string(in))
 		for i := range ret {
-			websocket.Message.Send(ws, ret[i])
+			c.WriteMessage(mt, ret[i])
 			time.Sleep(time.Second)
 		}
-		websocket.Message.Send(ws, "")
+		c.WriteMessage(mt, []byte(""))
 	}
 }
 
