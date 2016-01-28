@@ -70,7 +70,10 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			log.Println("read:", err)
 			break
 		}
+		log.Println("a")
+
 		go func() {
+			log.Println("b")
 			for {
 				msgToTl := <-tlChan
 				replyFromTl := tlAI(msgToTl)
@@ -91,6 +94,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 		//}()
 
 		for {
+			log.Println("c")
 			msgToQin := <-qinChan
 			replyFromQin := qinAI(msgToQin)
 			log.Println("send:", replyFromQin)
