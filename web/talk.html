@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>talk</title>
+    <script>
+        var WebSocket = window.WebSocket || window.MozWebSocket;
+
+        if (WebSocket) {
+
+            try {
+                var socket = new WebSocket('wss://samaritan.tech:8443/talk');
+            } catch (e) {
+            }
+        }
+
+        if (socket) {
+            socket.onmessage = function (event) {
+                document.getElementById("chat").append('<p>' + event.data + '</p>');
+            }
+        } else {
+
+        }
+    </script>
+</head>
+<body>
+<p id="chat">&nbsp;</p>
+</body>
+</html>

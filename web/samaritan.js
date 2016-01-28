@@ -69,7 +69,6 @@ var blinkTriangle = function() {
 };
 
 var chatWebsocket = function() {
-	var $msg = $('#msg');
 	var $text = $('#userText');
 
 	WebSocket = window.WebSocket || window.MozWebSocket;
@@ -89,8 +88,8 @@ var chatWebsocket = function() {
 			document.getElementById("msg").innerHTML = event.data;
 			if (event.data == ""){
 			    document.getElementById("userText").value = "";
-            };
-			console.log(event.data)
+			}
+			console.log(event.data);
 			if ($State.text.textWidth() < 1) {
 				hrWidth = 80;
 			} else {
@@ -131,7 +130,7 @@ var chatWebsocket = function() {
 					},
 					{
 						'duration': $State.wordAnim
-					})
+					});
 					console.log(event);
 					error_sleep_time = 500;
 					poll();
