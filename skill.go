@@ -326,7 +326,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		ret = "Ok, which American show do you want to download?"
 	case 1:
 		results <- "Searching American show..."
-		info := strings.Split(update.Message.Text, " ")
+		info := strings.Fields(update.Message.Text, " ")
 		if len(info) < 3 {
 			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
 			return
