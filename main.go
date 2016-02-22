@@ -81,6 +81,8 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 					}
 				}()
 				//c.WriteMessage(websocket.TextMessage, []byte("samaritan: " + replyFromTl))
+			} else {
+				break
 			}
 		}
 	}()
@@ -99,6 +101,8 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 					}
 				}()
 				//c.WriteMessage(websocket.TextMessage, []byte("菲菲: " + replyFromQin))
+			} else {
+				break
 			}
 		}
 	}()
@@ -116,13 +120,19 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 					}
 				}()
 				//c.WriteMessage(websocket.TextMessage, []byte("小冰: " + replyFromIce))
+			} else {
+				break
 			}
 		}
 	}()
 
 	go func() {
 		for {
-			c.WriteMessage(websocket.TextMessage, []byte(<-result))
+			if visitor > 0 {
+				c.WriteMessage(websocket.TextMessage, []byte(<-result))
+			} else {
+				break
+			}
 		}
 	}()
 
