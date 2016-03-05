@@ -166,7 +166,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		ret = receive(string(in))
 		for i := range ret {
 			c.WriteMessage(mt, []byte(ret[i]))
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1.5)
 		}
 		c.WriteMessage(mt, []byte(""))
 	}
