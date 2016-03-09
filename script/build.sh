@@ -8,7 +8,7 @@ do
   DIR="${FILE%.*}"_v1.1
   mkdir -p "$DIR"
   cp "${FILE}" "$DIR"
-  cp ..//config.json "$DIR"
+  cp ../../config.json "$DIR"
   zip -r "${DIR%.*}.zip" "$DIR"
   mv "${DIR%.*}.zip" out/
   tar -cvzf "${DIR%.*}.tar.gz" "$DIR"
