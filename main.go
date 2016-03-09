@@ -72,7 +72,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			if visitor > 0 {
 				msgToTl := <-tlChan
 				replyFromTl := tlAI(msgToTl)
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 2)
 				go func() {
 					if replyFromTl != "" {
 						result <- "samaritan: " + replyFromTl
@@ -92,7 +92,7 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 			if visitor > 0 {
 				msgToQin := <-qinChan
 				replyFromQin := qinAI(msgToQin)
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 2)
 				go func() {
 					if replyFromQin != "" {
 						result <- "菲菲: " + replyFromQin
