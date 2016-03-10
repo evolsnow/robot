@@ -65,3 +65,5 @@ This project is written in [go1.5](https://golang.org/doc/install).
 
 Contact me for further questions: [@evolsnow](https://telegram.me/evolsnow)
 
+### **License**
+[The MIT License (MIT)](https://raw.githubusercontent.com/evolsnow/robot/master/LICENSE)
