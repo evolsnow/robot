@@ -42,7 +42,7 @@ You can simply try the robot in telegram as mentioned above.
 But if you want to build your own robot:
 
 * [redis](http://redis.io/download) is required.
-* create a telegram robt follow the [reference](https://core.telegram.org/bots)
+* create a telegram robot follow the [reference](https://core.telegram.org/bots)
 * create your own configure file from the ```config.json``` file
 
 After that, you have two options to run the robot:
