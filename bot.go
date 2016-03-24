@@ -380,7 +380,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		}
 		if getShowFromZMZ(info[0], info[1], info[2], results) {
 			//found resource
-			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%dE%d", info[1], info[2]))
+			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%sE%s", info[1], info[2]))
 		}
 		delete(userAction, user)
 		results <- "done"
