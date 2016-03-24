@@ -374,8 +374,9 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		if len(info) < 3 {
 			if rct := conn.ReadDownloadRecord(user, info[0]); rct != "" {
 				results <- fmt.Sprintf("Recent downloads of %s: %s", info[0], rct)
+			} else {
+				results <- "Please specify the season and episode, like:\n*疑犯追踪 1 10*"
 			}
-			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
 			return
 		}
 		if getShowFromZMZ(info[0], info[1], info[2], results) {
