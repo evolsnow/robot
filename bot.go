@@ -457,6 +457,13 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
+	text = strings.Replace(text, "@"+rb.name, "", 1)
+	received := strings.Split(text, " ")
+	endPoint = received[0]
+	if endPoint == "/exit" {
+		delete(userAction, user)
+		return
+	}
 	if action, ok := userAction[user]; ok {
 		//detect if user is in interaction mode
 		switch action.ActionName {
@@ -497,16 +504,10 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	} else if string([]rune(text)[:2]) == "翻译" {
 		rawMsg = rb.Translate(update)
 	} else if string(text[0]) == "/" {
-		text = strings.Replace(text, "@"+rb.name, "", 1)
-		received := strings.Split(text, " ")
-		endPoint = received[0]
 		log.Printf(endPoint)
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
-		case "/exit":
-			delete(userAction, user)
-			break
 		case "/help":
 			rawMsg = rb.Help(update)
 		case "/alarms":
