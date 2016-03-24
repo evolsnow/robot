@@ -180,3 +180,16 @@ func ReadAllMemos(user string) []Memo {
 	}
 	return memos
 }
+
+func CreateDownloadRecord(user, show, se string) {
+	c := Pool.Get()
+	defer c.Close()
+	c.Do("HSET", user+":shows", show, se)
+}
+
+func ReadDownloadRecord(user, show string) string {
+	c := Pool.Get()
+	defer c.Close()
+	ret, _ := redis.String(c.Do("HGET", user+":shows", show))
+	return ret
+}

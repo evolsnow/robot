@@ -105,6 +105,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
+/exit - exit any interaction mode
 /help - show this help message
 `
 	return helpMsg
@@ -371,10 +372,16 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		results <- "Searching American show..."
 		info := strings.Fields(update.Message.Text)
 		if len(info) < 3 {
+			if rct := conn.ReadDownloadRecord(user, info[0]); rct != "" {
+				results <- fmt.Sprintf("Recent downloads of %s: %s", info[0], rct)
+			}
 			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
 			return
 		}
-		getShowFromZMZ(info[0], info[1], info[2], results)
+		if getShowFromZMZ(info[0], info[1], info[2], results) {
+			//found resource
+			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%dE%d", info[1], info[2]))
+		}
 		delete(userAction, user)
 		results <- "done"
 	}
@@ -450,6 +457,10 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
+	if endPoint == "/exit" {
+		delete(userAction, user)
+		return
+	}
 	if action, ok := userAction[user]; ok {
 		//detect if user is in interaction mode
 		switch action.ActionName {

@@ -78,12 +78,12 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	return
 }
 
-func getShowFromZMZ(show, s, e string, results chan string) {
+func getShowFromZMZ(show, s, e string, results chan string) (found bool) {
 	loginZMZ()
 	downloads := getZMZResource(show)
 	if downloads == nil {
 		results <- fmt.Sprintf("No results for *%s* from ZMZ", show)
-		return
+		return false
 	}
 	//second parse
 	re, _ := regexp.Compile(fmt.Sprintf(".*?season=\"%s\" episode=\"%s\">.*?", s, e))
@@ -100,9 +100,10 @@ func getShowFromZMZ(show, s, e string, results chan string) {
 	}
 	if count == 0 {
 		results <- fmt.Sprintf("No results found for *S%sE%s*", s, e)
-
+		return false
+	} else {
+		return true
 	}
-	return
 }
 
 //get show and get movie from zmz both uses this function
