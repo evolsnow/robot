@@ -457,10 +457,6 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
-	if endPoint == "/exit" {
-		delete(userAction, user)
-		return
-	}
 	if action, ok := userAction[user]; ok {
 		//detect if user is in interaction mode
 		switch action.ActionName {
@@ -508,6 +504,9 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		switch endPoint {
 		case "/start":
 			rawMsg = rb.Start(update)
+		case "/exit":
+			delete(userAction, user)
+			break
 		case "/help":
 			rawMsg = rb.Help(update)
 		case "/alarms":
