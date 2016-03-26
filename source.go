@@ -38,24 +38,44 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		return
 	} else {
 		id = string(firstId[1])
+		var ms []Media
 		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
 		defer resp.Body.Close()
-		re, _ = regexp.Compile(`<p><a href="(.*?)"( target="_blank">|>)(.*?)</a></p>`)
-		body, _ := ioutil.ReadAll(resp.Body)
-		//go does not support (?!) regex
-		body = []byte(strings.Replace(string(body), `<a href="/xunlei/"`, "", -1))
-		downloads := re.FindAllSubmatch(body, -1)
-		if len(downloads) == 0 {
+		doc, err := goquery.NewDocumentFromReader(io.Reader(resp.Body))
+		if err != nil {
+			return
+		}
+		doc.Find("p").Each(func(i int, selection *goquery.Selection) {
+			name := selection.Find("a").Text()
+			link, _ := selection.Find("a").Attr("href")
+			var size string
+			if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") || strings.HasPrefix(link, "thunder") {
+				size = selection.Text()
+				tmp := strings.Fields(size)
+				size = tmp[len(tmp)-1]
+				if chinese(size) {
+					size = "?"
+				}
+				m := Media{
+					Name: name,
+					Link: link,
+					Size: size,
+				}
+				ms = append(ms, m)
+			}
+		})
+
+		if len(ms) == 0 {
 			results <- fmt.Sprintf("No results for *%s* from LBL", movie)
 			return
 		} else {
 			ret := "Results from LBL:\n\n"
-			for i := range downloads {
-				ret += fmt.Sprintf("*%s*\n```%s```\n\n", string(downloads[i][3]), string(downloads[i][1]))
+			for i, m := range ms {
+				ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", m.Name, m.Size, m.Link)
 				//when results are too large, we split it.
-				if i%5 == 0 && i > 0 {
+				if i%4 == 0 && i > 0 {
 					results <- ret
-					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/5+1)
+					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
 				}
 			}
 			results <- ret
@@ -70,13 +90,18 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 		results <- fmt.Sprintf("No results for *%s* from ZMZ", movie)
 		return
 	} else {
-		results <- "Results from ZMZ:\n\n"
-		for _, m := range ms {
+		ret := "Results from ZMZ:\n\n"
+		for i, m := range ms {
 			name := m.Name
 			size := m.Size
 			link := m.Link
-			results <- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
+			if i%4 == 0 && i > 0 {
+				results <- ret
+				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/4+1)
+			}
 		}
+		results <- ret
 	}
 	return
 }
@@ -124,7 +149,7 @@ func getZMZResource(name, season, episode string) []Media {
 		if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") {
 			size = selection.Find(".fl font.f3").Text()
 			if size == "" || size == "0" {
-				size = "unknown_size"
+				size = "?"
 			}
 			m := Media{
 				Name: name,
