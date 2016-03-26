@@ -48,18 +48,10 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		doc.Find("p").Each(func(i int, selection *goquery.Selection) {
 			name := selection.Find("a").Text()
 			link, _ := selection.Find("a").Attr("href")
-			var size string
 			if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") || strings.HasPrefix(link, "thunder") {
-				size = selection.Text()
-				tmp := strings.Fields(size)
-				size = tmp[len(tmp)-1]
-				if chinese(size) {
-					size = "?"
-				}
 				m := Media{
 					Name: name,
 					Link: link,
-					Size: size,
 				}
 				ms = append(ms, m)
 			}
@@ -71,9 +63,9 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 		} else {
 			ret := "Results from LBL:\n\n"
 			for i, m := range ms {
-				ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", m.Name, m.Size, m.Link)
+				ret += fmt.Sprintf("*%s*\n```%s```\n\n", m.Name, m.Link)
 				//when results are too large, we split it.
-				if i%4 == 0 && i > 0 {
+				if i%4 == 0 && i < len(ms)-1 && i > 0 {
 					results <- ret
 					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
 				}
@@ -96,7 +88,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 			size := m.Size
 			link := m.Link
 			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i%4 == 0 && i > 0 {
+			if i%4 == 0 && i < len(ms)-1 && i > 0 {
 				results <- ret
 				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/4+1)
 			}
