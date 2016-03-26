@@ -132,7 +132,9 @@ func getZMZResource(name, season, episode string) []Media {
 	doc.Find("li.clearfix").Each(func(i int, selection *goquery.Selection) {
 		s, _ := selection.Attr("season")
 		e, _ := selection.Attr("episode")
-		if e != episode || s != season {
+		if e == "" || s == "" {
+			//movie
+		} else if e != episode || s != season {
 			return
 		}
 		name := selection.Find(".fl a").Text()
