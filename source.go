@@ -70,18 +70,13 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 		results <- fmt.Sprintf("No results for *%s* from ZMZ", movie)
 		return
 	} else {
-		ret := "Results from ZMZ:\n\n"
-		for i, m := range ms {
+		results <- "Results from ZMZ:\n\n"
+		for _, m := range ms {
 			name := m.Name
 			size := m.Size
 			link := m.Link
-			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i%3 == 0 && i > 0 {
-				results <- ret
-				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/3+1)
-			}
+			results <- fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
 		}
-		results <- ret
 	}
 	return
 }
