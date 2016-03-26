@@ -76,9 +76,9 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 			size := m.Size
 			link := m.Link
 			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i%5 == 0 && i > 0 {
+			if i%3 == 0 && i > 0 {
 				results <- ret
-				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/5+1)
+				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/3+1)
 			}
 		}
 		results <- ret
