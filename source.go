@@ -128,8 +128,8 @@ func getZMZResource(name, season, episode string) []Media {
 		var size string
 		if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") {
 			size = selection.Find(".fl font.f3").Text()
-			if size == "" {
-				size = "unknown"
+			if size == "" || size == "0" {
+				size = "unknown_size"
 			}
 			m := Media{
 				Name: name,
