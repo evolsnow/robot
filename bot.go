@@ -111,6 +111,11 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
+//markdown test function
+func (rb *Robot) Repeat(update tgbotapi.Update) {
+	rb.Reply(update, update.Message.Text)
+}
+
 //remote execute self evolve script, exit the robot, only for test.
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
@@ -551,6 +556,8 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 			rawMsg = "upgrading..."
 			go conn.CreateMasterId(chatId)
 			go rb.Evolve(update)
+		case "/repeat":
+			rb.Repeat(update)
 		default:
 			rawMsg = "unknow command, type /help?"
 		}
