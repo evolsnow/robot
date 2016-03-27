@@ -122,6 +122,7 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 		rb.Reply(update, "sorry, unauthorized")
 		return
 	}
+	conn.CreateMasterId(update.Message.Chat.ID)
 	<-saidGoodBye
 	close(saidGoodBye)
 	//git pull and restart
@@ -470,13 +471,13 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}
 	if action, ok := userAction[user]; ok {
 		//if user is in interaction mode
-		inAction(rb, action, update)
+		rawMsg = inAction(rb, action, update)
 	} else if string([]rune(text)[:2]) == "翻译" {
 		rawMsg = rb.Translate(update)
 	} else if string(text[0]) == "/" {
 		//new command
 		log.Printf(endPoint)
-		inCommand(rb, endPoint, update)
+		rawMsg = inCommand(rb, endPoint, update)
 	} else {
 		//just talk
 		rawMsg = rb.Talk(update)
