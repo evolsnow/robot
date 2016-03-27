@@ -23,16 +23,16 @@ func tlAI(info string) string {
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	log.Printf("reply from tuling machine: %s", reply.Text+"\n"+reply.Url)
+	log.Printf("reply from tuling machine: %s", reply.Text+"\n"+reply.URL)
 	wl := []string{"<cd.url=互动百科@", "", "&prd=button_doc_jinru>", "", "<br>", "\n"}
 	srp := strings.NewReplacer(wl...)
-	ret := srp.Replace(reply.Text + "\n" + reply.Url)
+	ret := srp.Replace(reply.Text + "\n" + reply.URL)
 	return ret
 }
 
 type tlReply struct {
 	code int
-	Url  string `json:"url,omitempty"`
+	URL  string `json:"url,omitempty"`
 	Text string `json:"text"`
 }
 

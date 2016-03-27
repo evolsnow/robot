@@ -137,9 +137,8 @@ func (rb *Robot) Translate(update tgbotapi.Update) string {
 		raw := strings.SplitAfterN(update.Message.Text, " ", 2) //at most 2 substring
 		if len(raw) < 2 {
 			return "what do you want to translate, try '/trans cat'?"
-		} else {
-			info = "翻译" + raw[1] //'翻译cat'
 		}
+		info = "翻译" + raw[1] //'翻译cat'
 	} else {
 		info = update.Message.Text
 	}
@@ -184,7 +183,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 
 	switch step {
 	case 0:
-		//known issue of go, you can not just assign update.Message.Chat.ID to userTask[user].ChatId
+		//known issue of go, you can not just assign update.Message.Chat.Id to userTask[user].ChatId
 		tmpTask.ChatId = update.Message.Chat.ID
 		tmpTask.Owner = user
 		userTask[user] = tmpTask
@@ -461,7 +460,6 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	}()
 	user := update.Message.Chat.UserName
 	text := update.Message.Text
-	chatId := update.Message.Chat.ID
 	var endPoint, rawMsg string
 	text = strings.Replace(text, "@"+rb.name, "", 1)
 	received := strings.Split(text, " ")
@@ -471,107 +469,119 @@ func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 		return
 	}
 	if action, ok := userAction[user]; ok {
-		//detect if user is in interaction mode
-		switch action.ActionName {
-		case "setReminder":
-			rawMsg = rb.SetReminder(update, action.ActionStep)
-		case "saveMemo":
-			rawMsg = rb.SaveMemo(update, action.ActionStep)
-		case "removeMemo":
-			rawMsg = rb.RemoveMemo(update, action.ActionStep)
-		case "removeReminder":
-			rawMsg = rb.RemoveReminder(update, action.ActionStep)
-		case "downloadMovie":
-			results := make(chan string, 2)
-			go rb.DownloadMovie(update, action.ActionStep, results)
-			for {
-				select {
-				case msg := <-results:
-					if msg == "done" {
-						return
-					}
-					rb.Reply(update, msg)
-				}
-
-			}
-		case "downloadShow":
-			results := make(chan string, 5)
-			go rb.DownloadShow(update, action.ActionStep, results)
-			for {
-				select {
-				case msg := <-results:
-					if msg == "done" {
-						return
-					}
-					rb.Reply(update, msg)
-				}
-			}
-		}
+		//if user is in interaction mode
+		inAction(rb, action, update)
 	} else if string([]rune(text)[:2]) == "翻译" {
 		rawMsg = rb.Translate(update)
 	} else if string(text[0]) == "/" {
+		//new command
 		log.Printf(endPoint)
-		switch endPoint {
-		case "/start":
-			rawMsg = rb.Start(update)
-		case "/help":
-			rawMsg = rb.Help(update)
-		case "/alarms":
-			rawMsg = rb.GetTasks(update)
-		case "/memos":
-			rawMsg = rb.GetAllMemos(update)
-		case "/trans":
-			rawMsg = rb.Translate(update)
-		case "/alarm":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "setReminder"
-			userAction[user] = tmpAction
-			rawMsg = rb.SetReminder(update, 0)
-		case "/movie":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "downloadMovie"
-			userAction[user] = tmpAction
-			rawMsg = rb.DownloadMovie(update, 0, nil)
-		case "/memo":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "saveMemo"
-			userAction[user] = tmpAction
-			rawMsg = rb.SaveMemo(update, 0)
-		case "/rmmemo":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "removeMemo"
-			userAction[user] = tmpAction
-			rawMsg = rb.RemoveMemo(update, 0)
-		case "/rmalarm":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "removeReminder"
-			userAction[user] = tmpAction
-			rawMsg = rb.RemoveReminder(update, 0)
-		case "/show":
-			tmpAction := userAction[user]
-			tmpAction.ActionName = "downloadShow"
-			userAction[user] = tmpAction
-			rawMsg = rb.DownloadShow(update, 0, nil)
-		case "/evolve":
-			rawMsg = "upgrading..."
-			go conn.CreateMasterId(chatId)
-			go rb.Evolve(update)
-		case "/repeat":
-			rb.Repeat(update)
-		default:
-			rawMsg = "unknow command, type /help?"
-		}
+		inCommand(rb, endPoint, update)
 	} else {
+		//just talk
 		rawMsg = rb.Talk(update)
 	}
+
 	if rawMsg == "" {
 		return
 	}
-
 	if err := rb.Reply(update, rawMsg); err != nil {
 		panic(err)
 	}
 	if endPoint == "/evolve" {
 		saidGoodBye <- 1
 	}
+}
+
+func inAction(rb *Robot, action Action, update tgbotapi.Update) (rawMsg string) {
+	switch action.ActionName {
+	case "setReminder":
+		rawMsg = rb.SetReminder(update, action.ActionStep)
+	case "saveMemo":
+		rawMsg = rb.SaveMemo(update, action.ActionStep)
+	case "removeMemo":
+		rawMsg = rb.RemoveMemo(update, action.ActionStep)
+	case "removeReminder":
+		rawMsg = rb.RemoveReminder(update, action.ActionStep)
+	case "downloadMovie":
+		results := make(chan string, 2)
+		go rb.DownloadMovie(update, action.ActionStep, results)
+		for {
+			select {
+			case msg := <-results:
+				if msg == "done" {
+					return
+				}
+				rb.Reply(update, msg)
+			}
+
+		}
+	case "downloadShow":
+		results := make(chan string, 5)
+		go rb.DownloadShow(update, action.ActionStep, results)
+		for {
+			select {
+			case msg := <-results:
+				if msg == "done" {
+					return
+				}
+				rb.Reply(update, msg)
+			}
+		}
+	}
+	return
+}
+
+func inCommand(rb *Robot, endPoint string, update tgbotapi.Update) (rawMsg string) {
+	user := update.Message.Chat.UserName
+	switch endPoint {
+	case "/start":
+		rawMsg = rb.Start(update)
+	case "/help":
+		rawMsg = rb.Help(update)
+	case "/alarms":
+		rawMsg = rb.GetTasks(update)
+	case "/memos":
+		rawMsg = rb.GetAllMemos(update)
+	case "/trans":
+		rawMsg = rb.Translate(update)
+	case "/alarm":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "setReminder"
+		userAction[user] = tmpAction
+		rawMsg = rb.SetReminder(update, 0)
+	case "/movie":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "downloadMovie"
+		userAction[user] = tmpAction
+		rawMsg = rb.DownloadMovie(update, 0, nil)
+	case "/memo":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "saveMemo"
+		userAction[user] = tmpAction
+		rawMsg = rb.SaveMemo(update, 0)
+	case "/rmmemo":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "removeMemo"
+		userAction[user] = tmpAction
+		rawMsg = rb.RemoveMemo(update, 0)
+	case "/rmalarm":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "removeReminder"
+		userAction[user] = tmpAction
+		rawMsg = rb.RemoveReminder(update, 0)
+	case "/show":
+		tmpAction := userAction[user]
+		tmpAction.ActionName = "downloadShow"
+		userAction[user] = tmpAction
+		rawMsg = rb.DownloadShow(update, 0, nil)
+	case "/evolve":
+		rawMsg = "upgrading..."
+		go rb.Evolve(update)
+	case "/repeat":
+		rb.Repeat(update)
+	default:
+		rawMsg = "unknow command, type /help?"
+	}
+	return
 }
