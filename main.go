@@ -39,7 +39,7 @@ func main() {
 	conn.Pool = conn.NewPool(redisServer, config.RedisPassword, config.RedisDB)
 
 	//create robot and run
-	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookUrl)
+	robot := newRobot(config.RobotToken, config.RobotName, config.WebHookURL)
 	robot.bot.Debug = debug
 	go robot.run()
 

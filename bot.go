@@ -168,9 +168,8 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 	if rb.nickName != "jarvis" {
 		if chinese(info) {
 			return tlAI(info)
-		} else {
-			return mitAI(info)
 		}
+		return mitAI(info)
 	} else {
 		//jarvis use another AI
 		return qinAI(info)

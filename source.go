@@ -166,11 +166,11 @@ func getZMZResourceId(name string) (id string) {
 	firstId := re.FindSubmatch(body)
 	if len(firstId) == 0 {
 		return
-	} else {
-		log.Println(id)
-		id = string(firstId[1])
-		return
 	}
+	log.Println(id)
+	id = string(firstId[1])
+	return
+
 }
 
 //login zmz first because zmz don't allow login at different browsers, but I have two robots...
