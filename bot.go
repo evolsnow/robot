@@ -115,13 +115,12 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
-// Evolve remote executes self evolve script, exit the robot, only for test.
-//markdown test function
+// Repeat is markdown test function
 func (rb *Robot) Repeat(update tgbotapi.Update) {
 	rb.Reply(update, update.Message.Text)
 }
 
-//remote execute self evolve script, exit the robot, only for test.
+// Evolve remote executes self evolve script, exit the robot, only for test.
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
 		rb.Reply(update, "sorry, unauthorized")
@@ -155,7 +154,7 @@ func (rb *Robot) Translate(update tgbotapi.Update) string {
 
 }
 
-//Talk with AI
+// Talk with AI
 func (rb *Robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	if strings.Contains(info, rb.name) {
