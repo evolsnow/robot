@@ -57,7 +57,7 @@ func newRobot(token, nickName, webHook string) *Robot {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rb.updates, _ = rb.bot.ListenForWebhook("/" + rb.bot.Token)
+	rb.updates = rb.bot.ListenForWebhook("/" + rb.bot.Token)
 	return rb
 }
 
@@ -76,12 +76,12 @@ func (rb *Robot) run() {
 
 // Reply is encapsulated robot message send action
 func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
-	var chatId int
+	var chatId int64
 	switch v.(type) {
 	case tgbotapi.Update:
 		chatId = v.(tgbotapi.Update).Message.Chat.ID
-	case int:
-		chatId = v.(int)
+	case int64:
+		chatId = v.(int64)
 	}
 	msg := tgbotapi.NewMessage(chatId, rawMsg)
 	msg.ParseMode = "markdown"

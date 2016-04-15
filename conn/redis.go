@@ -14,7 +14,7 @@ type Memo struct {
 // Task is user's task
 type Task struct {
 	Id     int    `redis:"id"`
-	ChatId int    `redis:"chatId"`
+	ChatId int64  `redis:"chatId"`
 	Owner  string `redis:"owner"`
 	Desc   string `redis:"content"`
 	When   string `redis:"time"`
@@ -23,22 +23,22 @@ type Task struct {
 //All redis CRUD actions
 
 // CreateMasterId saves master's id
-func CreateMasterId(id int) {
+func CreateMasterId(id int64) {
 	c := Pool.Get()
 	defer c.Close()
 	c.Do("SET", "masterChatId", id)
 }
 
 // ReadMasterId read master id in redis
-func ReadMasterId() int {
+func ReadMasterId() int64 {
 	c := Pool.Get()
 	defer c.Close()
-	id, _ := redis.Int(c.Do("GET", "masterChatId"))
+	id, _ := redis.Int64(c.Do("GET", "masterChatId"))
 	return id
 }
 
 // CreateUserChatId saves user's chat id
-func CreateUserChatId(user string, id int) {
+func CreateUserChatId(user string, id int64) {
 	c := Pool.Get()
 	defer c.Close()
 	key := user + "ChatId"
@@ -46,11 +46,11 @@ func CreateUserChatId(user string, id int) {
 }
 
 // ReadUserChatId read user's chat id
-func ReadUserChatId(user string) int {
+func ReadUserChatId(user string) int64 {
 	c := Pool.Get()
 	defer c.Close()
 	key := user + "ChatId"
-	id, _ := redis.Int(c.Do("GET", key))
+	id, _ := redis.Int64(c.Do("GET", key))
 	return id
 }
 
