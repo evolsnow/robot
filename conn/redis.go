@@ -5,11 +5,13 @@ import (
 	"log"
 )
 
+// Memo is user's memo
 type Memo struct {
 	Time    string `redis:"time"`
 	Content string `redis:"content"`
 }
 
+// Task is user's task
 type Task struct {
 	Id     int    `redis:"id"`
 	ChatId int    `redis:"chatId"`
@@ -20,12 +22,14 @@ type Task struct {
 
 //All redis CRUD actions
 
+// CreateMasterId saves master's id
 func CreateMasterId(id int) {
 	c := Pool.Get()
 	defer c.Close()
 	c.Do("SET", "masterChatId", id)
 }
 
+// ReadMasterId read master id in redis
 func ReadMasterId() int {
 	c := Pool.Get()
 	defer c.Close()
@@ -33,6 +37,7 @@ func ReadMasterId() int {
 	return id
 }
 
+// CreateUserChatId saves user's chat id
 func CreateUserChatId(user string, id int) {
 	c := Pool.Get()
 	defer c.Close()
@@ -40,6 +45,7 @@ func CreateUserChatId(user string, id int) {
 	c.Do("SET", key, id)
 }
 
+// ReadUserChatId read user's chat id
 func ReadUserChatId(user string) int {
 	c := Pool.Get()
 	defer c.Close()
@@ -48,6 +54,7 @@ func ReadUserChatId(user string) int {
 	return id
 }
 
+// CreateMemo saves a memo
 func CreateMemo(user, time, memo string) {
 	c := Pool.Get()
 	defer c.Close()
@@ -60,6 +67,7 @@ func CreateMemo(user, time, memo string) {
 	script.Do(c, user, time, memo)
 }
 
+// DeleteMemo deletes a memo
 func DeleteMemo(user string, index int) {
 	c := Pool.Get()
 	defer c.Close()
@@ -72,6 +80,7 @@ func DeleteMemo(user string, index int) {
 	script.Do(c, user, index)
 }
 
+// UpdateTaskId auto increases task id
 func UpdateTaskId() int {
 	c := Pool.Get()
 	defer c.Close()
@@ -79,6 +88,7 @@ func UpdateTaskId() int {
 	return id
 }
 
+// CreateTask saves a task
 func CreateTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
@@ -92,6 +102,7 @@ func CreateTask(ts Task) {
 	script.Do(c, ts.Id, ts.Owner, ts.When, ts.Desc, ts.ChatId)
 }
 
+// DeleteTask deletes a task
 func DeleteTask(ts Task) {
 	c := Pool.Get()
 	defer c.Close()
@@ -105,19 +116,20 @@ func DeleteTask(ts Task) {
 	script.Do(c, ts.Owner, ts.Id)
 }
 
+// ReadUserTasks read user's all tasks
 func ReadUserTasks(user string) []Task {
 	c := Pool.Get()
 	defer c.Close()
-	var multiGetTaskLua = `
+	var lua = `
 	local data = redis.call("LRANGE", KEYS[1]..":tasks", "0", "-1")
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "task:"..data[idx])
   	end
   	return ret
-   `
+   	`
 	var tasks []Task
-	script := redis.NewScript(1, multiGetTaskLua)
+	script := redis.NewScript(1, lua)
 	values, err := redis.Values(script.Do(c, user))
 	if err != nil {
 		log.Println(err)
@@ -130,6 +142,7 @@ func ReadUserTasks(user string) []Task {
 	return tasks
 }
 
+// ReadAllTasks load all unfinished task
 func ReadAllTasks() []Task {
 	c := Pool.Get()
 	defer c.Close()
@@ -156,19 +169,20 @@ func ReadAllTasks() []Task {
 
 }
 
+// ReadAllMemo get user's all memos
 func ReadAllMemos(user string) []Memo {
 	c := Pool.Get()
 	defer c.Close()
-	var multiGetMemoLua = `
+	var lua = `
 	local data = redis.call("LRANGE", KEYS[1]..":memos", "0", "-1")
 	local ret = {}
   	for idx=1, #data do
   		ret[idx] = redis.call("HGETALL", "memo:"..data[idx])
   	end
   	return ret
-   `
+   	`
 	var memos []Memo
-	script := redis.NewScript(1, multiGetMemoLua)
+	script := redis.NewScript(1, lua)
 	values, err := redis.Values(script.Do(c, user))
 	if err != nil {
 		log.Println(err)
@@ -181,12 +195,14 @@ func ReadAllMemos(user string) []Memo {
 	return memos
 }
 
+// CreateDownloadRecord records user's latest American show download
 func CreateDownloadRecord(user, show, se string) {
 	c := Pool.Get()
 	defer c.Close()
 	c.Do("HSET", user+":shows", show, se)
 }
 
+// ReadDownloadRecord get latest download record
 func ReadDownloadRecord(user, show string) string {
 	c := Pool.Get()
 	defer c.Close()

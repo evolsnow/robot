@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Config for initialized robot and server
 type Config struct {
 	Server  string `json:"server"`
 	Port    int    `json:"port"`
@@ -21,6 +22,7 @@ type Config struct {
 	RobotToken    string `json:"robot_token"`
 }
 
+// ParseConfig parses config from the given file path
 func ParseConfig(path string) (config *Config, err error) {
 	file, err := os.Open(path)
 	if err != nil {

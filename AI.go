@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+//get reply from tlAI
 func tlAI(info string) string {
 	key := "a5052a22b8232be1e387ff153e823975"
 	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, url.QueryEscape(info))
@@ -36,6 +37,7 @@ type tlReply struct {
 	Text string `json:"text"`
 }
 
+//get reply from qinAI
 func qinAI(info string) string {
 	//info = strings.Replace(info, " ", "+", -1)
 	qinURL := fmt.Sprintf("http://api.qingyunke.com/api.php?key=free&appid=0&msg=%s", url.QueryEscape(info))
@@ -64,6 +66,7 @@ type qinReply struct {
 	Content string `json:"content"`
 }
 
+//get reply from mitAI
 func mitAI(info string) string {
 	mitURL := "http://fiddle.pandorabots.com/pandora/talk?botid=9fa364f2fe345a10&skin=demochat"
 	resp, err := http.PostForm(mitURL, url.Values{"message": {info}, "botcust2": {"d064e07d6e067535"}})
@@ -86,6 +89,7 @@ func mitAI(info string) string {
 	return ret
 }
 
+//get reply from iceAI
 func iceAI(info string) string {
 	iceURL := fmt.Sprintf("http://127.0.0.1:8008/openxiaoice/ask?q=%s", url.QueryEscape(info))
 	timeout := time.Duration(4 * time.Second)

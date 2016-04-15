@@ -1,3 +1,6 @@
+/*
+Package conn provides redis connection
+*/
 package conn
 
 import (
@@ -9,6 +12,7 @@ var Pool *redis.Pool
 
 //var CachePool *redis.Pool
 
+// NewPool return a redis pool
 func NewPool(server, password string, db int) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     3,
@@ -33,6 +37,7 @@ func NewPool(server, password string, db int) *redis.Pool {
 	}
 }
 
+// Ping tests redis pool connection
 func Ping(server, password string) bool {
 	c, err := redis.Dial("tcp", server)
 	if err != nil {

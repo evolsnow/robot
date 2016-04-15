@@ -16,6 +16,7 @@ import (
 //zmz.tv needs to login before downloading
 var zmzClient http.Client
 
+//get movie resource from lbl
 func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var id string
@@ -55,6 +56,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 	}
 }
 
+//get movie resource from zmz
 func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	loginZMZ()
@@ -78,6 +80,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 	return
 }
 
+//get American show resource from zmz
 func getShowFromZMZ(show, s, e string, results chan string) (found bool) {
 	loginZMZ()
 	downloads := getZMZResource(show)
@@ -126,6 +129,7 @@ func getZMZResource(name string) [][][]byte {
 	return downloads
 }
 
+//get source id before find zmz source
 func getZMZResourceId(name string) (id string) {
 	queryURL := fmt.Sprintf("http://www.zimuzu.tv/search?keyword=%s&type=resource", name)
 	re, _ := regexp.Compile(`<div class="t f14"><a href="/resource/(.*?)"><strong class="list_title">`)

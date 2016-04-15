@@ -27,19 +27,22 @@ var userAction = make(map[string]Action) //map[user]Action
 var userTask = make(map[string]conn.Task)
 var userTaskIds = make(map[string][]int)
 
+// Robot is a bot carried with additional information
 type Robot struct {
 	bot      *tgbotapi.BotAPI
-	updates  <-chan tgbotapi.Update
-	shutUp   bool   //shut up the robot
-	name     string //name from telegram
-	nickName string //user defined name
+	updates  <-chan tgbotapi.Update //update msg
+	shutUp   bool                   //shut up the robot
+	name     string                 //name from telegram
+	nickName string                 //user defined name
 }
 
+// Action used in interaction mode
 type Action struct {
 	ActionName string
 	ActionStep int
 }
 
+//return a initialized robot
 func newRobot(token, nickName, webHook string) *Robot {
 	var rb = new(Robot)
 	var err error
@@ -58,6 +61,7 @@ func newRobot(token, nickName, webHook string) *Robot {
 	return rb
 }
 
+//robot run and handle update msg
 func (rb *Robot) run() {
 	chatId := conn.ReadMasterId()
 	rawMsg := fmt.Sprintf("%s is coming back!", rb.nickName)
@@ -70,7 +74,7 @@ func (rb *Robot) run() {
 	}
 }
 
-//encapsulated robot message send action
+// Reply is encapsulated robot message send action
 func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
 	var chatId int
 	switch v.(type) {
@@ -86,14 +90,14 @@ func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
 	return
 }
 
-// command '/start'
+// Start is command '/start'
 func (rb *Robot) Start(update tgbotapi.Update) string {
 	user := update.Message.Chat.UserName
 	go conn.CreateUserChatId(user, update.Message.Chat.ID)
 	return fmt.Sprintf("welcome: %s.\nType '/help' see what can I do.", user)
 }
 
-//help message
+// Help show help message
 func (rb *Robot) Help(update tgbotapi.Update) string {
 	helpMsg := `
 /alarm - set a reminder
@@ -111,7 +115,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 	return helpMsg
 }
 
-//remote execute self evolve script, exit the robot, only for test.
+// Evolve remote executes self evolve script, exit the robot, only for test.
 func (rb *Robot) Evolve(update tgbotapi.Update) {
 	if update.Message.Chat.FirstName != "Evol" || update.Message.Chat.LastName != "Gan" {
 		rb.Reply(update, "sorry, unauthorized")
@@ -125,6 +129,8 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 	os.Exit(1)
 }
 
+// Translate Zh<-->En
+// command '/trans'
 func (rb *Robot) Translate(update tgbotapi.Update) string {
 	var info string
 	if string(update.Message.Text[0]) == "/" {
@@ -143,6 +149,7 @@ func (rb *Robot) Translate(update tgbotapi.Update) string {
 
 }
 
+//Talk with AI
 func (rb *Robot) Talk(update tgbotapi.Update) string {
 	info := update.Message.Text
 	if strings.Contains(info, rb.name) {
@@ -172,6 +179,8 @@ func (rb *Robot) Talk(update tgbotapi.Update) string {
 	}
 }
 
+// SetReminder set an alarm
+// command '/alarm'
 func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	user := update.Message.Chat.UserName
 	tmpTask := userTask[user]
@@ -251,7 +260,7 @@ func (rb *Robot) SetReminder(update tgbotapi.Update, step int) string {
 	return ""
 }
 
-// all tasks do here
+// DoTask accomplish all tasks here
 func (rb *Robot) DoTask(ts conn.Task) {
 	nowString := time.Now().Format(RedisFormat)
 	now, _ := time.Parse(RedisFormat, nowString)
@@ -284,7 +293,7 @@ func (rb *Robot) DoTask(ts conn.Task) {
 	conn.DeleteTask(ts)
 }
 
-// get the given  user's all tasks
+// GetTasks get the given  user's all tasks
 // command 'alarms'
 func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
@@ -298,6 +307,8 @@ func (rb *Robot) GetTasks(update tgbotapi.Update) (ret string) {
 	return
 }
 
+// RemoveReminder cancel a task
+// command '/rmalarm'
 func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
@@ -334,7 +345,8 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 	return
 }
 
-//download from lbl and zmz
+// DownloadMovie download movie from lbl and zmz
+// command '/movie'
 func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
@@ -359,7 +371,8 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	return
 }
 
-//download American show from zmz
+// DownloadShow download American show from zmz
+// command '/show'
 func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan string) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
@@ -375,7 +388,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 			if rct := conn.ReadDownloadRecord(user, info[0]); rct != "" {
 				results <- fmt.Sprintf("Recent downloads of %s: %s", info[0], rct)
 			}
-			results <- "Please specify the season and episode,like:\n*疑犯追踪 1 10*"
+			results <- "Please specify the season and episode, like:\n*疑犯追踪 1 10*"
 			return
 		}
 		if getShowFromZMZ(info[0], info[1], info[2], results) {
@@ -388,6 +401,8 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 	return
 }
 
+// SaveMemo create a memo for user, saved in redis
+// command '/memo'
 func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
@@ -406,6 +421,8 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 	return
 }
 
+// GetAllMemos reads all user's memos in redis
+// command '/memos'
 func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	user := update.Message.Chat.UserName
 	memos := conn.ReadAllMemos(user)
@@ -418,6 +435,8 @@ func (rb *Robot) GetAllMemos(update tgbotapi.Update) (ret string) {
 	return
 }
 
+// RemoveMemo deletes a memo
+// command '/rmmemo'
 func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
@@ -438,6 +457,7 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 	return
 }
 
+//restore task when robot run
 func restoreTasks(rb *Robot) {
 	tasks := conn.ReadAllTasks()
 	log.Println("unfinished tasks:", len(tasks))
@@ -446,6 +466,7 @@ func restoreTasks(rb *Robot) {
 	}
 }
 
+//all telegram updates are handled here
 func handlerUpdate(rb *Robot, update tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
