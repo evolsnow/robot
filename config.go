@@ -13,7 +13,7 @@ type Config struct {
 	Cert    string `json:"cert"`
 	CertKey string `json:"cert_key"`
 
-	WebHookUrl    string `json:"webhook_url"`
+	WebHookURL    string `json:"webhook_url"`
 	RedisAddress  string `json:"redis_address"`
 	RedisPort     int    `json:"redis_port"`
 	RedisDB       int    `json:"redis_db"`
