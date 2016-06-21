@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	FirstFormat  = "1/02 15:04"
+	FirstFormat  = "1/2 15:04"
 	SecondFormat = "15:04"
 	ThirdFormat  = "15:04:05"
-	RedisFormat  = "1/02 15:04:05" //save to redis format
+	RedisFormat  = "1/2 15:04:05" //save to redis format
 )
 
 var saidGoodBye = make(chan int, 1)
