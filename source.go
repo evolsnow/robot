@@ -6,7 +6,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -66,9 +65,9 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 			for i, m := range ms {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", m.Name, m.Link)
 				//when results are too large, we split it.
-				if i%4 == 0 && i < len(ms)-1 && i > 0 {
+				if i % 4 == 0 && i < len(ms) - 1 && i > 0 {
 					results <- ret
-					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
+					ret = fmt.Sprintf("*LBL Part %d*\n\n", i / 4 + 1)
 				}
 			}
 			results <- ret
@@ -90,9 +89,9 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 			size := m.Size
 			link := m.Link
 			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i%4 == 0 && i < len(ms)-1 && i > 0 {
+			if i % 4 == 0 && i < len(ms) - 1 && i > 0 {
 				results <- ret
-				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/4+1)
+				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i / 4 + 1)
 			}
 		}
 		results <- ret
@@ -135,9 +134,7 @@ func getZMZResource(name, season, episode string) []Media {
 	doc.Find("li.clearfix").Each(func(i int, selection *goquery.Selection) {
 		s, _ := selection.Attr("season")
 		e, _ := selection.Attr("episode")
-		if e == "" || s == "" {
-			//movie
-		} else if e != episode || s != season {
+		if s != season || e != episode {
 			return
 		}
 		name := selection.Find(".fl a").Text()
@@ -171,10 +168,8 @@ func getZMZResourceId(name string) (id string) {
 	if len(firstId) == 0 {
 		return
 	}
-	log.Println(id)
 	id = string(firstId[1])
 	return
-
 }
 
 //login zmz first because zmz don't allow login at different browsers, but I have two robots...
