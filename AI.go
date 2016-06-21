@@ -24,7 +24,7 @@ func tlAI(info string) string {
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	log.Printf("reply from tuling machine: %s", reply.Text+"\n"+reply.URL)
+	log.Printf("reply from tuling machine: %s", reply.Text + "\n" + reply.URL)
 	wl := []string{"<cd.url=互动百科@", "", "&prd=button_doc_jinru>", "", "<br>", "\n"}
 	srp := strings.NewReplacer(wl...)
 	ret := srp.Replace(reply.Text + "\n" + reply.URL)
@@ -68,25 +68,34 @@ type qinReply struct {
 
 //get reply from mitAI
 func mitAI(info string) string {
-	mitURL := "http://fiddle.pandorabots.com/pandora/talk?botid=9fa364f2fe345a10&skin=demochat"
-	resp, err := http.PostForm(mitURL, url.Values{"message": {info}, "botcust2": {"d064e07d6e067535"}})
+	mitURL := "https://demo.pandorabots.com/atalk/mitsuku/mitsukudemo"
+	resp, err := http.PostForm(mitURL, url.Values{"input": {info}, "user_key": {"pb3568993377180953528873199695415106305"}})
 	if err != nil {
 		log.Printf(err.Error())
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	re, _ := regexp.Compile("Mitsuku:</B>(.*?)<br> <br>")
-	all := re.FindSubmatch(body)
-	if len(all) == 0 {
-		return "change another question?"
-	}
-	found := (string(all[1]))
-	log.Printf("reply from mitsuku machine: %s", found)
-	wl := []string{`<P ALIGN="CENTER"><img src="http://`, "", `"></img></P>`, " ", "<br>", "\n", "xloadswf2.", "", "Mitsuku", "samaritan"}
-	srp := strings.NewReplacer(wl...)
-	ret := srp.Replace(found)
-	ret = strings.TrimLeft(ret, " ")
-	return ret
+	reply := new(mitReply)
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(reply)
+	log.Printf("reply from qingyunke machine: %s", reply.Responses[0])
+	return reply.Responses[0]
+	//body, err := ioutil.ReadAll(resp.Body)
+	//re, _ := regexp.Compile("Mitsuku:</B>(.*?)<br> <br>")
+	//all := re.FindSubmatch(body)
+	//if len(all) == 0 {
+	//	return "change another question?"
+	//}
+	//found := (string(all[1]))
+	//log.Printf("reply from mitsuku machine: %s", found)
+	//wl := []string{`<P ALIGN="CENTER"><img src="http://`, "", `"></img></P>`, " ", "<br>", "\n", "xloadswf2.", "", "Mitsuku", "samaritan"}
+	//srp := strings.NewReplacer(wl...)
+	//ret := srp.Replace(found)
+	//ret = strings.TrimLeft(ret, " ")
+	//return ret
+}
+
+type mitReply struct {
+	Responses []string `json:"responses"`
 }
 
 //get reply from iceAI
