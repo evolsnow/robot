@@ -75,21 +75,8 @@ func mitAI(info string) string {
 	reply := new(mitReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	log.Printf("reply from qingyunke machine: %s", reply.Responses[0])
+	log.Printf("reply from mit machine: %s", reply.Responses[0])
 	return reply.Responses[0]
-	//body, err := ioutil.ReadAll(resp.Body)
-	//re, _ := regexp.Compile("Mitsuku:</B>(.*?)<br> <br>")
-	//all := re.FindSubmatch(body)
-	//if len(all) == 0 {
-	//	return "change another question?"
-	//}
-	//found := (string(all[1]))
-	//log.Printf("reply from mitsuku machine: %s", found)
-	//wl := []string{`<P ALIGN="CENTER"><img src="http://`, "", `"></img></P>`, " ", "<br>", "\n", "xloadswf2.", "", "Mitsuku", "samaritan"}
-	//srp := strings.NewReplacer(wl...)
-	//ret := srp.Replace(found)
-	//ret = strings.TrimLeft(ret, " ")
-	//return ret
 }
 
 type mitReply struct {

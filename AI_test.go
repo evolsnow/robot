@@ -12,6 +12,6 @@ func TestAIReply(t *testing.T) {
 	//	t.Error("qinAI error")
 	//}
 	if mitAI(askEn) == "" || mitAI(askZh) == "" {
-		t.Error("tlAI error")
+		t.Error("mitAI error")
 	}
 }
