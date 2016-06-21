@@ -7,7 +7,7 @@ An amazing telegram robot.
 Basically, you can talk with the robot with both ```Chinese``` and ```English``` because it has 4 Artificial Intelligence inside:
 
 * [Turing Robot](http://www.tuling123.com/)
-* [Mitsuku Chatbot](http://www.mitsuku.com/)
+* [Mitsuku Chatbot](http://www.pandorabots.com/)
 * [Microsoft's Chatbot Xiaoice](http://www.msxiaoice.com/)
 * [Qingyunke chatbot](http://api.qingyunke.com/)
 
