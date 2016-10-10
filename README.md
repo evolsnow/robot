@@ -25,6 +25,7 @@ Additionally, it supports the following commands:
 /show - find American show download links
 /trans - translate words between english and chinese
 /help - show this help message
+/exit - exit any interactive mode
 ```
 
 Is that all?
