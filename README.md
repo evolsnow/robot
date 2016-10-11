@@ -24,8 +24,8 @@ Additionally, it supports the following commands:
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
-/help - show this help message
 /exit - exit any interactive mode
+/help - show this help message
 ```
 
 Is that all?

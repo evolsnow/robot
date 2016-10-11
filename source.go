@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type Media struct {
@@ -65,9 +66,9 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 			for i, m := range ms {
 				ret += fmt.Sprintf("*%s*\n```%s```\n\n", m.Name, m.Link)
 				//when results are too large, we split it.
-				if i % 4 == 0 && i < len(ms) - 1 && i > 0 {
+				if i%4 == 0 && i < len(ms)-1 && i > 0 {
 					results <- ret
-					ret = fmt.Sprintf("*LBL Part %d*\n\n", i / 4 + 1)
+					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
 				}
 			}
 			results <- ret
@@ -88,10 +89,10 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 			name := m.Name
 			size := m.Size
 			link := m.Link
-			ret += fmt.Sprintf("*%s*(%s)\n```%s```\n\n", name, size, link)
-			if i % 4 == 0 && i < len(ms) - 1 && i > 0 {
+			ret += fmt.Sprintf("*%s* %s\n```%s```\n\n", name, size, link)
+			if i%4 == 0 && i < len(ms)-1 && i > 0 {
 				results <- ret
-				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i / 4 + 1)
+				ret = fmt.Sprintf("*ZMZ Part %d*\n\n", i/4+1)
 			}
 		}
 		results <- ret
@@ -111,7 +112,7 @@ func getShowFromZMZ(show, s, e string, results chan string) (found bool) {
 		name := m.Name
 		size := m.Size
 		link := m.Link
-		results <- fmt.Sprintf("*ZMZ %s*(%s)\n```%s```\n\n", name, size, link)
+		results <- fmt.Sprintf("*ZMZ %s* %s\n```%s```\n\n", name, size, link)
 	}
 	return true
 }
@@ -122,7 +123,7 @@ func getZMZResource(name, season, episode string) []Media {
 	if id == "" {
 		return nil
 	}
-	resourceURL := "http://www.zimuzu.tv/resource/list/" + id
+	resourceURL := "http://www.zimuzu.tv/gresource/list/" + id
 	resp, _ := zmzClient.Get(resourceURL)
 	defer resp.Body.Close()
 	//1.name 2.size 3.link
@@ -137,13 +138,13 @@ func getZMZResource(name, season, episode string) []Media {
 		if s != season || e != episode {
 			return
 		}
-		name := selection.Find(".fl a").Text()
+		name := selection.Find(".fl a.lk").Text()
 		link, _ := selection.Find(".fr a").Attr("href")
 		var size string
 		if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") {
 			size = selection.Find(".fl font.f3").Text()
 			if size == "" || size == "0" {
-				size = "?"
+				size = "(?)"
 			}
 			m := Media{
 				Name: name,

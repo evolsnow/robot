@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/evolsnow/robot/conn"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"os"
 	"os/exec"
@@ -11,6 +9,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/evolsnow/robot/conn"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 const (

@@ -5,7 +5,7 @@ gox github.com/evolsnow/robot
 mkdir -p out
 for FILE in *
 do
-  DIR="${FILE%.*}"_v1_1
+  DIR="${FILE%.*}"_v1_2
   mkdir -p "$DIR"
   cp "${FILE}" "$DIR"
   cp ../../config.json "$DIR"

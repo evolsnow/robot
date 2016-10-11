@@ -17,12 +17,13 @@ func tlAI(info string) string {
 	resp, err := http.Get(tuLingURL)
 	if err != nil {
 		log.Printf(err.Error())
+		return ""
 	}
 	defer resp.Body.Close()
 	reply := new(tlReply)
 	decoder := json.NewDecoder(resp.Body)
 	decoder.Decode(reply)
-	log.Printf("reply from tuling machine: %s", reply.Text + "\n" + reply.URL)
+	log.Printf("reply from tuling machine: %s", reply.Text+"\n"+reply.URL)
 	wl := []string{"<cd.url=互动百科@", "", "&prd=button_doc_jinru>", "", "<br>", "\n"}
 	srp := strings.NewReplacer(wl...)
 	ret := srp.Replace(reply.Text + "\n" + reply.URL)
@@ -70,6 +71,7 @@ func mitAI(info string) string {
 	resp, err := http.PostForm(mitURL, url.Values{"input": {info}, "user_key": {"pb3568993377180953528873199695415106305"}})
 	if err != nil {
 		log.Printf(err.Error())
+		return ""
 	}
 	defer resp.Body.Close()
 	reply := new(mitReply)
