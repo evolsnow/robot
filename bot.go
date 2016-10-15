@@ -419,9 +419,9 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, what do you want to save?"
 	case 1:
 		defer delete(userAction, user)
-		time := time.Now().Format("2006-1-02 15:04")
+		when := time.Now().Format("2006-1-02 15:04")
 		memo := update.Message.Text
-		go conn.CreateMemo(user, time, memo)
+		go conn.CreateMemo(user, when, memo)
 		ret = "Ok, type '/memos' to see all your memos"
 	}
 	return

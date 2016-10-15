@@ -1,6 +1,8 @@
 # **robot**
 An amazing telegram robot.
 
+[JianShu Blog](http://www.jianshu.com/p/46c7d36a95d2)
+
 [![Build Status](https://api.travis-ci.org/evolsnow/robot.svg?branch=master)](https://travis-ci.org/evolsnow/robot)
 
 ### **Feature**
@@ -62,7 +64,7 @@ go build github.com/evolsnow/robot
 You may want to add ```-d``` flag to debug.
 
 ### **Development**
-This project is written in [go1.5](https://golang.org/doc/install).
+This project is written in [go](https://golang.org/doc/install).
 
 Contact me for further questions: [@evolsnow](https://telegram.me/evolsnow)
 
