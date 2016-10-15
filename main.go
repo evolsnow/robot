@@ -169,23 +169,21 @@ func groupTalk(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//used for web samaritan robot
+//used by web samaritan robot
 func socketHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Println("upgrade:", err)
 		return
 	}
 	defer c.Close()
 	for {
-		var in []byte
-		var ret []string
 		mt, in, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		ret = receive(string(in))
+		ret := receive(string(in))
 		for i := range ret {
 			c.WriteMessage(mt, []byte(ret[i]))
 			time.Sleep(time.Second)
@@ -219,7 +217,7 @@ func ajax(w http.ResponseWriter, r *http.Request) {
 func receive(in string) (ret []string) {
 	fmt.Printf("Received: %s\n", in)
 	var response string
-	var answer = make(chan string)
+	var answer = make(chan string, 3)
 	sf := func(c rune) bool {
 		return c == ',' || c == '，' || c == ';' || c == '。' || c == '.' || c == '？' || c == '?'
 	}
@@ -239,7 +237,7 @@ func receive(in string) (ret []string) {
 				answer <- strings.Replace(ret, "Jarvis", "samaritan", -1)
 			}
 		}()
-		response = <-answer
+		response = <-answer // accept the first reply
 		// Separate into fields with func.
 		ret = strings.FieldsFunc(response, sf)
 
