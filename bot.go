@@ -11,6 +11,7 @@ import (
 
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"sync"
 )
 
 const (
@@ -362,15 +363,21 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan<- 
 	case 1:
 		defer func() {
 			delete(userAction, user)
-			//close(results)
+			close(results)
 		}()
 		results <- "Searching movie..."
 		movie := update.Message.Text
-		//var wg sync.WaitGroup
-		//wg.Add(2)
-		go getMovieFromZMZ(movie, results)
-		go getMovieFromLBL(movie, results)
-		//wg.Wait()
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			getMovieFromZMZ(movie, results)
+		}()
+		go func() {
+			defer wg.Done()
+			getMovieFromLBL(movie, results)
+		}()
+		wg.Wait()
 	}
 	return
 }
@@ -386,6 +393,10 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		userAction[user] = tmpAction
 		ret = "Ok, which American show do you want to download?"
 	case 1:
+		defer func() {
+			delete(userAction, user)
+			close(results)
+		}()
 		results <- "Searching American show..."
 		info := strings.Fields(update.Message.Text)
 		if len(info) < 3 {
@@ -400,8 +411,6 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 			//found resource
 			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%sE%s", info[1], info[2]))
 		}
-		delete(userAction, user)
-		close(results)
 	}
 	return
 }
