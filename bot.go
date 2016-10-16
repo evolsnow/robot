@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/evolsnow/robot/conn"
@@ -352,7 +351,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 
 // DownloadMovie download movie from lbl and zmz
 // command '/movie'
-func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
+func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan<- string) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
 	switch step {
@@ -363,15 +362,15 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	case 1:
 		defer func() {
 			delete(userAction, user)
-			results <- "done"
+			//close(results)
 		}()
 		results <- "Searching movie..."
 		movie := update.Message.Text
-		var wg sync.WaitGroup
-		wg.Add(2)
-		go getMovieFromZMZ(movie, results, &wg)
-		go getMovieFromLBL(movie, results, &wg)
-		wg.Wait()
+		//var wg sync.WaitGroup
+		//wg.Add(2)
+		go getMovieFromZMZ(movie, results)
+		go getMovieFromLBL(movie, results)
+		//wg.Wait()
 	}
 	return
 }
@@ -402,7 +401,7 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%sE%s", info[1], info[2]))
 		}
 		delete(userAction, user)
-		results <- "done"
+		close(results)
 	}
 	return
 }
@@ -529,26 +528,22 @@ func inAction(rb *Robot, action Action, update tgbotapi.Update) (rawMsg string) 
 		results := make(chan string, 2)
 		go rb.DownloadMovie(update, action.ActionStep, results)
 		for {
-			select {
-			case msg := <-results:
-				if msg == "done" {
-					return
-				}
-				rb.Reply(update, msg)
+			msg, ok := <-results
+			if !ok {
+				return
 			}
+			rb.Reply(update, msg)
 
 		}
 	case "downloadShow":
 		results := make(chan string, 5)
 		go rb.DownloadShow(update, action.ActionStep, results)
 		for {
-			select {
-			case msg := <-results:
-				if msg == "done" {
-					return
-				}
-				rb.Reply(update, msg)
+			msg, ok := <-results
+			if !ok {
+				return
 			}
+			rb.Reply(update, msg)
 		}
 	}
 	return

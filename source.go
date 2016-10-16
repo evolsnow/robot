@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -10,9 +11,6 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"sync"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 type Media struct {
@@ -25,8 +23,7 @@ type Media struct {
 var zmzClient http.Client
 
 //get movie resource from lbl
-func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func getMovieFromLBL(movie string, results chan<- string) {
 	var id string
 	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
 	defer resp.Body.Close()
@@ -77,8 +74,7 @@ func getMovieFromLBL(movie string, results chan string, wg *sync.WaitGroup) {
 }
 
 //get movie resource from zmz
-func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func getMovieFromZMZ(movie string, results chan<- string) {
 	loginZMZ()
 	if ms := getZMZResource(movie, "0", "0"); ms == nil {
 		results <- fmt.Sprintf("No results for *%s* from ZMZ", movie)
@@ -101,7 +97,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 }
 
 //get American show resource from zmz
-func getShowFromZMZ(show, s, e string, results chan string) (found bool) {
+func getShowFromZMZ(show, s, e string, results chan<- string) bool {
 	loginZMZ()
 	ms := getZMZResource(show, s, e)
 	if ms == nil {
