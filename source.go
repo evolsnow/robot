@@ -101,7 +101,7 @@ func getMovieFromZMZ(movie string, results chan string, wg *sync.WaitGroup) {
 }
 
 //get American show resource from zmz
-func getShowFromZMZ(show, s, e string, results chan string) (found bool) {
+func getShowFromZMZ(show, s, e string, results chan string) bool {
 	loginZMZ()
 	ms := getZMZResource(show, s, e)
 	if ms == nil {
