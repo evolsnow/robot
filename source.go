@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/evolsnow/gohxb/lib/log"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +28,11 @@ func getMovieFromLBL(movie string, results chan<- string) {
 	var id string
 	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Debug("lbl request err:", err)
+		return
+	}
 	re, _ := regexp.Compile("<div class=\"postlist\" id=\"post-(.*?)\">")
 	//find first match case
 	firstId := re.FindSubmatch(body)
@@ -58,18 +63,17 @@ func getMovieFromLBL(movie string, results chan<- string) {
 		if len(ms) == 0 {
 			results <- fmt.Sprintf("No results for *%s* from LBL", movie)
 			return
-		} else {
-			ret := "Results from LBL:\n\n"
-			for i, m := range ms {
-				ret += fmt.Sprintf("*%s*\n```%s```\n\n", m.Name, m.Link)
-				//when results are too large, we split it.
-				if i%4 == 0 && i < len(ms)-1 && i > 0 {
-					results <- ret
-					ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
-				}
-			}
-			results <- ret
 		}
+		ret := "Results from LBL:\n\n"
+		for i, m := range ms {
+			ret += fmt.Sprintf("*%s*\n```%s```\n\n", m.Name, m.Link)
+			//when results are too large, we split it.
+			if i%4 == 0 && i < len(ms)-1 && i > 0 {
+				results <- ret
+				ret = fmt.Sprintf("*LBL Part %d*\n\n", i/4+1)
+			}
+		}
+		results <- ret
 	}
 }
 
