@@ -4,9 +4,9 @@ package main
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/evolsnow/gohxb/lib/log"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -30,7 +30,7 @@ func getMovieFromLBL(movie string, results chan<- string) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Debug("lbl request err:", err)
+		log.Println("lbl request err:", err)
 		return
 	}
 	re, _ := regexp.Compile("<div class=\"postlist\" id=\"post-(.*?)\">")
