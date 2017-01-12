@@ -7,11 +7,11 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"sync"
 )
 
 const (
@@ -352,7 +352,7 @@ func (rb *Robot) RemoveReminder(update tgbotapi.Update, step int) (ret string) {
 
 // DownloadMovie download movie from lbl and zmz
 // command '/movie'
-func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan string) (ret string) {
+func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan<- string) (ret string) {
 	user := update.Message.Chat.UserName
 	tmpAction := userAction[user]
 	switch step {
@@ -363,14 +363,20 @@ func (rb *Robot) DownloadMovie(update tgbotapi.Update, step int, results chan st
 	case 1:
 		defer func() {
 			delete(userAction, user)
-			results <- "done"
+			close(results)
 		}()
 		results <- "Searching movie..."
 		movie := update.Message.Text
 		var wg sync.WaitGroup
 		wg.Add(2)
-		go getMovieFromZMZ(movie, results, &wg)
-		go getMovieFromLBL(movie, results, &wg)
+		go func() {
+			defer wg.Done()
+			getMovieFromZMZ(movie, results)
+		}()
+		go func() {
+			defer wg.Done()
+			getMovieFromLBL(movie, results)
+		}()
 		wg.Wait()
 	}
 	return
@@ -387,6 +393,10 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 		userAction[user] = tmpAction
 		ret = "Ok, which American show do you want to download?"
 	case 1:
+		defer func() {
+			delete(userAction, user)
+			close(results)
+		}()
 		results <- "Searching American show..."
 		info := strings.Fields(update.Message.Text)
 		if len(info) < 3 {
@@ -401,8 +411,6 @@ func (rb *Robot) DownloadShow(update tgbotapi.Update, step int, results chan str
 			//found resource
 			conn.CreateDownloadRecord(user, info[0], fmt.Sprintf("S%sE%s", info[1], info[2]))
 		}
-		delete(userAction, user)
-		results <- "done"
 	}
 	return
 }
@@ -419,9 +427,9 @@ func (rb *Robot) SaveMemo(update tgbotapi.Update, step int) (ret string) {
 		ret = "Ok, what do you want to save?"
 	case 1:
 		defer delete(userAction, user)
-		time := time.Now().Format("2006-1-02 15:04")
+		when := time.Now().Format("2006-1-02 15:04")
 		memo := update.Message.Text
-		go conn.CreateMemo(user, time, memo)
+		go conn.CreateMemo(user, when, memo)
 		ret = "Ok, type '/memos' to see all your memos"
 	}
 	return
@@ -529,26 +537,22 @@ func inAction(rb *Robot, action Action, update tgbotapi.Update) (rawMsg string) 
 		results := make(chan string, 2)
 		go rb.DownloadMovie(update, action.ActionStep, results)
 		for {
-			select {
-			case msg := <-results:
-				if msg == "done" {
-					return
-				}
-				rb.Reply(update, msg)
+			msg, ok := <-results
+			if !ok {
+				return
 			}
+			rb.Reply(update, msg)
 
 		}
 	case "downloadShow":
 		results := make(chan string, 5)
 		go rb.DownloadShow(update, action.ActionStep, results)
 		for {
-			select {
-			case msg := <-results:
-				if msg == "done" {
-					return
-				}
-				rb.Reply(update, msg)
+			msg, ok := <-results
+			if !ok {
+				return
 			}
+			rb.Reply(update, msg)
 		}
 	}
 	return

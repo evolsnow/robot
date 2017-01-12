@@ -10,13 +10,17 @@ import (
 	"time"
 )
 
+const (
+	tlKey = "a5052a22b8232be1e387ff153e823975"
+)
+
 //get reply from tlAI
 func tlAI(info string) string {
-	key := "a5052a22b8232be1e387ff153e823975"
-	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", key, url.QueryEscape(info))
+
+	tuLingURL := fmt.Sprintf("http://www.tuling123.com/openapi/api?key=%s&info=%s", tlKey, url.QueryEscape(info))
 	resp, err := http.Get(tuLingURL)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err)
 		return ""
 	}
 	defer resp.Body.Close()

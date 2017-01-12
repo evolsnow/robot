@@ -55,7 +55,7 @@ func ReadUserChatId(user string) int64 {
 }
 
 // CreateMemo saves a memo
-func CreateMemo(user, time, memo string) {
+func CreateMemo(user, when, memo string) {
 	c := Pool.Get()
 	defer c.Close()
 	var setMemoLua = `
@@ -64,7 +64,7 @@ func CreateMemo(user, time, memo string) {
 	redis.call("HMSET", "memo:"..id, "time", KEYS[2], "content", KEYS[3])
 	`
 	script := redis.NewScript(3, setMemoLua)
-	script.Do(c, user, time, memo)
+	script.Do(c, user, when, memo)
 }
 
 // DeleteMemo deletes a memo
