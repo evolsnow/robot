@@ -67,6 +67,8 @@ type qinReply struct {
 
 //get reply from mitAI
 func mitAI(info string) string {
+	//todo fix mitAI
+	return tlAI(info)
 	mitURL := "https://demo.pandorabots.com/atalk/mitsuku/mitsukudemo"
 	resp, err := http.PostForm(mitURL, url.Values{"input": {info}, "user_key": {"pb3568993377180953528873199695415106305"}})
 	if err != nil {
@@ -76,7 +78,10 @@ func mitAI(info string) string {
 	defer resp.Body.Close()
 	reply := new(mitReply)
 	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(reply)
+	err = decoder.Decode(reply)
+	if err != nil {
+		return ""
+	}
 	log.Printf("reply from mit machine: %s", reply.Responses[0])
 	return reply.Responses[0]
 }
