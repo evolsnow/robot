@@ -120,6 +120,7 @@ func getShowFromZMZ(show, s, e string, results chan<- string) bool {
 //get show and get movie from zmz both uses this function
 func getZMZResource(name, season, episode string) []Media {
 	id := getZMZResourceId(name)
+	log.Println("resource id:", id)
 	if id == "" {
 		return nil
 	}
@@ -130,6 +131,7 @@ func getZMZResource(name, season, episode string) []Media {
 	var ms []Media
 	doc, err := goquery.NewDocumentFromReader(io.Reader(resp.Body))
 	if err != nil {
+		log.Println("go query err:", err)
 		return nil
 	}
 	doc.Find("li.clearfix").Each(func(i int, selection *goquery.Selection) {
@@ -140,6 +142,7 @@ func getZMZResource(name, season, episode string) []Media {
 		}
 		name := selection.Find(".fl a.lk").Text()
 		link, _ := selection.Find(".fr a").Attr("href")
+		log.Println(name, '\n', link)
 		var size string
 		if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") {
 			size = selection.Find(".fl font.f3").Text()
@@ -176,7 +179,7 @@ func getZMZResourceId(name string) (id string) {
 //login zmz first because zmz don't allow login at different browsers, but I have two robots...
 func loginZMZ() {
 	gCookieJar, _ := cookiejar.New(nil)
-	zmzURL := "http://www.zimuzu.tv/User/Login/ajaxLogin"
+	zmzURL := "http://www.zmz2017.com/User/Login/ajaxLogin"
 	zmzClient = http.Client{
 		Jar: gCookieJar,
 	}
