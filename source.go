@@ -123,7 +123,7 @@ func getZMZResource(name, season, episode string) []Media {
 	if id == "" {
 		return nil
 	}
-	resourceURL := "http://www.zimuzu.tv/gresource/list/" + id
+	resourceURL := "http://www.zmz2017.com/resource/list/" + id
 	resp, _ := zmzClient.Get(resourceURL)
 	defer resp.Body.Close()
 	//1.name 2.size 3.link
@@ -159,7 +159,7 @@ func getZMZResource(name, season, episode string) []Media {
 
 //get source id before find zmz source
 func getZMZResourceId(name string) (id string) {
-	queryURL := fmt.Sprintf("http://www.zimuzu.tv/search?keyword=%s&type=resource", name)
+	queryURL := fmt.Sprintf("http://www.zmz2017.com/search?keyword=%s&type=resource", name)
 	re, _ := regexp.Compile(`<div class="t f14"><a href="/resource/(.*?)"><strong class="list_title">`)
 	resp, _ := zmzClient.Get(queryURL)
 	defer resp.Body.Close()
