@@ -1,6 +1,7 @@
 #!/bin/bash
+rm -rf build
+mkdir build
 cd build
-rm -rf .*
 gox github.com/evolsnow/robot
 mkdir -p out
 for FILE in *
