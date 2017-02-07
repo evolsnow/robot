@@ -88,6 +88,9 @@ func (rb *Robot) Reply(v interface{}, rawMsg string) (err error) {
 	msg.ParseMode = "markdown"
 	log.Printf(rawMsg)
 	_, err = rb.bot.Send(msg)
+	if err != nil {
+		log.Println(err)
+	}
 	return
 }
 
@@ -275,16 +278,13 @@ func (rb *Robot) DoTask(ts conn.Task) {
 		du := when.Sub(now)
 		timer := time.NewTimer(du)
 		abortTask[ts.Id] = make(chan int)
-		for {
-			select {
-			case <-abortTask[ts.Id]:
-				//triggered by 'rm alarm' command
-				log.Println("abort mission:", ts.Id)
-				conn.DeleteTask(ts)
-				return
-			case <-timer.C:
-				break
-			}
+		select {
+		case <-abortTask[ts.Id]:
+			//triggered by 'rm alarm' command
+			log.Println("abort mission:", ts.Id)
+			conn.DeleteTask(ts)
+			return
+		case <-timer.C:
 			break
 		}
 	}

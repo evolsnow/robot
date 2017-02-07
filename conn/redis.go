@@ -14,7 +14,7 @@ type Memo struct {
 // Task is user's task
 type Task struct {
 	Id     int    `redis:"id"`
-	ChatId int64  `redis:"chatId"`
+	ChatId int64  `redis:"chatID"`
 	Owner  string `redis:"owner"`
 	Desc   string `redis:"content"`
 	When   string `redis:"time"`
