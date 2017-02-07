@@ -26,11 +26,15 @@ var zmzClient http.Client
 //get movie resource from lbl
 func getMovieFromLBL(movie string, results chan<- string) {
 	var id string
-	resp, _ := http.Get("http://www.lbldy.com/search/" + movie)
+	resp, err := http.Get("http://www.lbldy.com/search/" + movie)
+	if err != nil {
+		log.Println("get movie from lbl err:", err)
+		return
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("lbl request err:", err)
+		log.Println("lbl resp read err:", err)
 		return
 	}
 	re, _ := regexp.Compile("<div class=\"postlist\" id=\"post-(.*?)\">")
@@ -42,7 +46,10 @@ func getMovieFromLBL(movie string, results chan<- string) {
 	} else {
 		id = string(firstId[1])
 		var ms []Media
-		resp, _ = http.Get("http://www.lbldy.com/movie/" + id + ".html")
+		resp, err = http.Get("http://www.lbldy.com/movie/" + id + ".html")
+		if err != nil {
+			return
+		}
 		defer resp.Body.Close()
 		doc, err := goquery.NewDocumentFromReader(io.Reader(resp.Body))
 		if err != nil {
@@ -125,7 +132,11 @@ func getZMZResource(name, season, episode string) []Media {
 		return nil
 	}
 	resourceURL := "http://www.zmz2017.com/resource/list/" + id
-	resp, _ := zmzClient.Get(resourceURL)
+	resp, err := zmzClient.Get(resourceURL)
+	if err != nil {
+		log.Println("get zmz resource err:", err)
+		return nil
+	}
 	defer resp.Body.Close()
 	//1.name 2.size 3.link
 	var ms []Media
@@ -142,7 +153,6 @@ func getZMZResource(name, season, episode string) []Media {
 		}
 		name := selection.Find(".fl a.lk").Text()
 		link, _ := selection.Find(".fr a").Attr("href")
-		log.Println(name, '\n', link)
 		var size string
 		if strings.HasPrefix(link, "ed2k") || strings.HasPrefix(link, "magnet") {
 			size = selection.Find(".fl font.f3").Text()
@@ -164,7 +174,11 @@ func getZMZResource(name, season, episode string) []Media {
 func getZMZResourceId(name string) (id string) {
 	queryURL := fmt.Sprintf("http://www.zmz2017.com/search?keyword=%s&type=resource", name)
 	re, _ := regexp.Compile(`<div class="t f14"><a href="/resource/(.*?)"><strong class="list_title">`)
-	resp, _ := zmzClient.Get(queryURL)
+	resp, err := zmzClient.Get(queryURL)
+	if err != nil {
+		log.Println("zmz resource id err:", err)
+		return
+	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	//find first match case
@@ -176,13 +190,17 @@ func getZMZResourceId(name string) (id string) {
 	return
 }
 
-//login zmz first because zmz don't allow login at different browsers, but I have two robots...
+//login zmz first because zmz don't allow login at different browsers.
 func loginZMZ() {
 	gCookieJar, _ := cookiejar.New(nil)
 	zmzURL := "http://www.zmz2017.com/User/Login/ajaxLogin"
 	zmzClient = http.Client{
 		Jar: gCookieJar,
 	}
-	//post with my public account, you can use it also
-	zmzClient.PostForm(zmzURL, url.Values{"account": {"evol4snow"}, "password": {"104545"}, "remember": {"0"}})
+	//post with my public account, you can use it as well.
+	resp, err := zmzClient.PostForm(zmzURL, url.Values{"account": {"evol4snow"}, "password": {"104545"}, "remember": {"0"}})
+	if err != nil {
+		return
+	}
+	resp.Body.Close()
 }
