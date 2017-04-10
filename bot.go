@@ -1,17 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/evolsnow/robot/conn"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"sync"
 )
 
 const (
@@ -113,6 +116,7 @@ func (rb *Robot) Help(update tgbotapi.Update) string {
 /movie - find movie download links
 /show - find American show download links
 /trans - translate words between english and chinese
+/express - check your latest express status
 /exit - exit any interaction mode
 /help - show this help message
 `
@@ -144,7 +148,7 @@ func (rb *Robot) Evolve(update tgbotapi.Update) {
 func (rb *Robot) Translate(update tgbotapi.Update) string {
 	var info string
 	if string(update.Message.Text[0]) == "/" {
-		//'trans cat'
+		//'/trans cat'
 		raw := strings.SplitAfterN(update.Message.Text, " ", 2) //at most 2 substring
 		if len(raw) < 2 {
 			return "what do you want to translate, try '/trans cat'?"
@@ -471,6 +475,70 @@ func (rb *Robot) RemoveMemo(update tgbotapi.Update, step int) (ret string) {
 	return
 }
 
+// GetExpressStats fetched express info from web
+// command '/express'
+func (rb *Robot) GetExpressStats(update tgbotapi.Update) (ret string) {
+	info := strings.Fields(update.Message.Text)
+	if len(info) != 2 {
+		return "Type '/express your-order-no' to get your express information"
+	}
+	orderNo := info[1]
+	type numInfo struct {
+		Auto []struct {
+			ComCode string `json:"comCode"`
+		} `json:"auto"`
+	}
+	resp, err := http.Get("https://www.kuaidi100.com/autonumber/autoComNum?text=" + orderNo)
+	if err != nil {
+		return "remote server err, please check again later"
+	}
+	defer resp.Body.Close()
+	ni := new(numInfo)
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "failed to read from remote server"
+	}
+	err = json.Unmarshal(data, ni)
+	if err != nil {
+		return "invalid response from remote server"
+	}
+	if len(ni.Auto) == 0 {
+		return "Unknown order number"
+	}
+	resp, err = http.Get(fmt.Sprintf("https://www.kuaidi100.com/query?type=%s&postid=%s&id=1",
+		ni.Auto[0].ComCode, orderNo))
+	if err != nil {
+		return "remote server err, please check again later"
+	}
+	type kdInfo struct {
+		Message string `json:"message"`
+		Data    []struct {
+			Time    string `json:"time"`
+			Context string `json:"context"`
+		} `json:"data"`
+	}
+	k := new(kdInfo)
+	data, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "failed to read from remote server"
+	}
+	err = json.Unmarshal(data, k)
+	if err != nil {
+		return "invalid response from remote server"
+	}
+	if k.Message != "ok" {
+		return k.Message
+	}
+	for i, d := range k.Data {
+		content := d.Time + d.Context
+		if i == 0 {
+			content = "*" + content + "*\n"
+		}
+		ret += content + "\n"
+	}
+	return
+}
+
 //restore task when robot run
 func restoreTasks(rb *Robot) {
 	tasks := conn.ReadAllTasks()
@@ -601,6 +669,8 @@ func inCommand(rb *Robot, endPoint string, update tgbotapi.Update) (rawMsg strin
 		tmpAction.ActionName = "downloadShow"
 		userAction[user] = tmpAction
 		rawMsg = rb.DownloadShow(update, 0, nil)
+	case "/express":
+		rawMsg = rb.GetExpressStats(update)
 	case "/evolve":
 		rawMsg = "upgrading..."
 		go rb.Evolve(update)
