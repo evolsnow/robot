@@ -530,7 +530,7 @@ func (rb *Robot) GetExpressStats(update tgbotapi.Update) (ret string) {
 		return k.Message
 	}
 	for i, d := range k.Data {
-		content := d.Time + d.Context
+		content := d.Time +"    "+ d.Context
 		if i == 0 {
 			content = "*" + content + "*\n"
 		}
