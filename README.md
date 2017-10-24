@@ -39,7 +39,8 @@ For more advanced usage, contact [@EvolsnowBot](https://telegram.me/EvolsnowBot)
 Remember that the website can just show a part of the robot's skills.
 To be precise, it's just able to talk with you...
 
- https://samaritan.tech
+ https://samaritan.tech  (deprecated)
+
 ### **Installation**
 You can simply try the robot in telegram as mentioned above.
 But if you want to build your own robot:
